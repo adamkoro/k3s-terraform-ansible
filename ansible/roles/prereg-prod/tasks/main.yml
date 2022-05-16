@@ -1,0 +1,12 @@
+- name: Create partitions
+  include_tasks: create_partitions.yml
+  tags:
+    - partitioning
+
+- name: Install open-iscsi for Longhorn
+  community.general.zypper:
+    name: open-iscsi
+    state: present
+    disable_recommends: no
+  tags:
+    - package_install

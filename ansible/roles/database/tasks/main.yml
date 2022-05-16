@@ -1,0 +1,154 @@
+---
+- name: Create a new partition for Postgres
+  community.general.parted:
+    device: '{{ postgres_disk }}'
+    number: 1
+    state: present
+    label: gpt
+  tags:
+  - database_install
+  - prepare
+
+- name: Create a filesystem for Postgres
+  community.general.filesystem:
+    dev: '{{ postgres_disk + "1" }}'
+    fstype: '{{ filesystem_type }}'
+    force: yes
+  tags:
+  - database_install
+  - prepare
+
+- name: Get Postgres disk UUID
+  command: blkid -s UUID -o value {{ postgres_disk + '1' }}
+  register: uuid_postgres
+  tags:
+  - database_install
+  - prepare
+
+- name: Add Postgres disk to fstab
+  blockinfile:
+    path: /etc/fstab
+    state: present
+    block: |
+      UUID={{ uuid_postgres.stdout }} {{ postgres_mount_path }} {{ filesystem_type }} defaults 0 0
+  tags:
+  - database_install
+  - prepare
+
+- name: Create mountpoint for Postgres
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - '{{ postgres_mount_path }}'
+  tags:
+  - database_install
+  - prepare
+
+- name: Mount Postgres disk
+  command: mount -a
+  tags:
+  - database_install
+  - prepare
+
+- name: Install Postgres database server
+  community.general.zypper:
+    name: postgresql14-server
+    state: present
+    disable_recommends: no
+  tags:
+  - database_install
+
+- name: Install psycopg2 for access Postgres database
+  community.general.zypper:
+    name: python3-psycopg2
+    state: present
+    disable_recommends: no
+  tags:
+  - database_install
+
+- name: Change pgsql directory owner
+  ansible.builtin.command:
+    cmd: "chown postgres:postgres {{ postgres_mount_path }}"
+  tags:
+  - database_install
+
+- name: Create Postgres data directory
+  file:
+    path: "{{ postgres_mount_path }}/data"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: 0640
+  tags:
+  - database_install
+
+- name: Restart and check Postgres service
+  systemd:
+    name: postgresql
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  tags:
+  - database_install
+  - database_update
+
+- name: Copy Postgres config file
+  template:
+    src: "postgresql.conf.j2"
+    dest: "{{ postgres_mount_path }}/data/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: 0600
+  tags:
+  - database_install
+  - database_update
+
+- name: Copy Postgres connection config file
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgres_mount_path }}/data/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: 0600
+  tags:
+  - database_install
+  - database_update
+
+- name: Restart and check Postgres service
+  systemd:
+    name: postgresql
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  tags:
+  - database_install
+  - database_update
+
+- name: "Wait for Postgres port: {{ postgres_port }} at {{ postgres_host }}"
+  wait_for:
+    host: '{{ postgres_host }}'
+    port: '{{ postgres_port }}'
+    delay: 1
+  tags:
+  - database_install
+
+- name: Copy database create sql file
+  template:
+    src: "create_database.sql.j2"
+    dest: "/create_database.sql"
+    owner: postgres
+    group: postgres
+    mode: 0600
+  tags:
+  - database_install
+  - database_update
+
+- name: Create database for K3S cluster
+  ansible.builtin.command:
+    cmd: "sudo -u postgres psql -f /create_database.sql"
+  tags:
+  - database_install

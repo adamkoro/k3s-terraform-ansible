@@ -1,0 +1,34 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+    name: longhorn
+    namespace: kube-system
+spec:
+    chart: longhorn
+    version: {{ longhorn_version }}
+    repo: https://charts.longhorn.io
+    targetNamespace: longhorn-system
+    valuesContent: |-
+        defaultSettings:
+            backupTarget: {{ longhorn_backup_path }}
+            defaultReplicaCount: {{ longhorn_replica_number }}
+            createDefaultDiskLabeledNodes: {{ longhorn_disk_on_labeled_node }}
+            taintToleration: {{ storage_node_taints }}
+        ingress:
+            enabled: {{ longhorn_ingress_enabled }}
+            host: {{ longhorn_hostname }}
+            tls: true
+            tlsSecret: longhorn-home-adamkoro-com
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+    name: longhorn-home-adamkoro-com
+    namespace: longhorn-system
+spec:
+    secretName: longhorn-home-adamkoro-com
+    issuerRef:
+        name: letsencrypt-production 
+        kind: ClusterIssuer
+    dnsNames:
+    - longhorn.home.adamkoro.com

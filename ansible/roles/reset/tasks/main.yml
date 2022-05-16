@@ -1,0 +1,69 @@
+---
+- name: Disable services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  failed_when: false
+  with_items:
+    - k3s
+    - k3s-worker
+    - k3s-storage
+    - k3s-init
+  tags:
+  - remove_all
+
+- name: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
+  register: pkill_containerd_shim_runc
+  command: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
+  changed_when: "pkill_containerd_shim_runc.rc == 0"
+  failed_when: false
+  tags:
+  - remove_all
+
+
+- name: Umount k3s filesystems
+  include_tasks: umount_with_children.yml
+  with_items:
+    - /run/k3s
+    - /var/lib/kubelet
+    - /run/netns
+    - /var/lib/rancher
+    - /var/lib/longhorn
+  loop_control:
+    loop_var: mounted_fs
+  tags:
+  - remove_all
+
+- name: Remove service files, binaries and data
+  file:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - /usr/local/bin/k3s
+    - "{{ systemd_dir }}/k3s.service"
+    - "{{ systemd_dir }}/k3s-worker.service"
+    - "{{ systemd_dir }}/k3s-storage.service"
+    - /etc/rancher/k3s
+    - /var/lib/kubelet
+    - /var/lib/rancher
+    - /var/lib/longhorn
+  tags:
+  - remove_all
+
+- name: daemon_reload
+  systemd:
+    daemon_reload: yes
+  tags:
+  - remove_all
+
+- name: Remove created partitions
+  include_tasks: remove_partitions.yml
+  tags:
+    - partitioning
+
+- name: Delete K3S database
+  include_tasks: drop_k3s_table.yml
+  when: inventory_hostname in groups['database']
+  tags:
+    - delete_table
