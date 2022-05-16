@@ -21,7 +21,6 @@ spec:
             backupTarget: {{ longhorn_backup_path }}
             defaultReplicaCount: {{ longhorn_replica_number }}
             createDefaultDiskLabeledNodes: {{ longhorn_disk_on_labeled_node }}
-            taintToleration: {{ storage_node_taints }}
         ingress:
             enabled: {{ longhorn_ingress_enabled }}
             host: {{ longhorn_hostname }}
@@ -36,7 +35,7 @@ metadata:
 spec:
     secretName: longhorn-cert
     issuerRef:
-        name: letsencrypt-staging 
+        name: letsencrypt-staging
         kind: ClusterIssuer
     dnsNames:
     - {{ longhorn_hostname }}
