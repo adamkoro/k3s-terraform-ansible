@@ -45,7 +45,9 @@ resource "proxmox_vm_qemu" "database" {
 
     os_type = "cloud-init"
     ipconfig0 = "ip=192.168.1.2${count.index}/24,gw=192.168.1.254"
-    ciuser = var.cloudinit_username
+    searchdomain = var.cloud_init_search_domain
+    nameserver = var.cloud_init_nameserver
+    ciuser = var.cloud_init_username
     cipassword = var.cloud_init_password
     sshkeys = var.cloud_init_pub_ssh_key
 }
@@ -97,7 +99,9 @@ resource "proxmox_vm_qemu" "master" {
 
     os_type = "cloud-init"
     ipconfig0 = "ip=192.168.1.2${count.index + 1}/24,gw=192.168.1.254"
-    ciuser = var.cloudinit_username
+    searchdomain = var.cloud_init_search_domain
+    nameserver = var.cloud_init_nameserver
+    ciuser = var.cloud_init_username
     cipassword = var.cloud_init_password
     sshkeys = var.cloud_init_pub_ssh_key
 }
@@ -149,7 +153,9 @@ resource "proxmox_vm_qemu" "worker" {
 
     os_type = "cloud-init"
     ipconfig0 = "ip=192.168.1.3${count.index + 1}/24,gw=192.168.1.254"
-    ciuser = var.cloudinit_username
+    searchdomain = var.cloud_init_search_domain
+    nameserver = var.cloud_init_nameserver
+    ciuser = var.cloud_init_username
     cipassword = var.cloud_init_password
     sshkeys = var.cloud_init_pub_ssh_key
 }
@@ -207,7 +213,9 @@ resource "proxmox_vm_qemu" "storage" {
 
     os_type = "cloud-init"
     ipconfig0 = "ip=192.168.1.3${5 + count.index}/24,gw=192.168.1.254"
-    ciuser = var.cloudinit_username
+    searchdomain = var.cloud_init_search_domain
+    nameserver = var.cloud_init_nameserver
+    ciuser = var.cloud_init_username
     cipassword = var.cloud_init_password
     sshkeys = var.cloud_init_pub_ssh_key
 }

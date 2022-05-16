@@ -2,7 +2,7 @@ variable "vm_count"{
     default = 2
 }
 
-variable "cloudinit_username"{
+variable "cloud_init_username"{
     type = string
 }
 
@@ -12,6 +12,14 @@ variable "cloud_init_password"{
 }
 
 variable "cloud_init_pub_ssh_key"{
+    type = string
+}
+
+variable "cloud_init_search_domain"{
+    type = string
+}
+
+variable "cloud_init_nameserver"{
     type = string
 }
 
