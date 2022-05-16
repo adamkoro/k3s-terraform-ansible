@@ -1,0 +1,6 @@
+---
+- name: Delete K3S database
+  include_tasks: drop_k3s_table.yml
+  when: inventory_hostname in groups['database']
+  tags:
+    - delete_table
