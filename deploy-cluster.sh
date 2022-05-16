@@ -75,11 +75,11 @@ Help()
     echo "  terraform-install           Cluster install with Terraform"
     echo "  cluster-install-full        Installing the whole cluster with all Ansible roles"
     echo "  cluster-install             Installing the cluster without preparation,partitioning and package_install tags"
-    echo "  cluster-install-only        Installing the cluster without "
-    echo "  database-install"
-    echo "  update-manifests"
-    echo "  update-cluster"
-    echo "  update-database"
+    echo "  cluster-install-only        Installing the cluster only -> k3s components only"
+    echo "  database-install            Only install the Postgres database in database node"
+    echo "  update-manifests            Updating the manifest files on first master"
+    echo "  update-cluster              Updating cluster config example: service file changed or added plus paramateres"
+    echo "  update-database             Updating the database configs"
 }
 
 # Checks
