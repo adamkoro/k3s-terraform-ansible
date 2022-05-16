@@ -15,18 +15,18 @@ spec:
         ingress:
             tls:
                 source: secret
-                secretName: rancher-home-adamkoro-com
+                secretName: rancher-cert
 
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-    name: rancher-home-adamkoro-com
+    name: rancher-cert
     namespace: cattle-system
 spec:
-    secretName: rancher-home-adamkoro-com
+    secretName: rancher-cert
     issuerRef:
         name: letsencrypt-production
         kind: ClusterIssuer
     dnsNames:
-    - rancher.home.adamkoro.com
+    - {{ rancher_hostname }}

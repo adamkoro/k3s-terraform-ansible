@@ -18,17 +18,17 @@ spec:
             enabled: {{ longhorn_ingress_enabled }}
             host: {{ longhorn_hostname }}
             tls: true
-            tlsSecret: longhorn-home-adamkoro-com
+            tlsSecret: longhorn-cert
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-    name: longhorn-home-adamkoro-com
+    name: longhorn-cert
     namespace: longhorn-system
 spec:
-    secretName: longhorn-home-adamkoro-com
+    secretName: longhorn-cert
     issuerRef:
         name: letsencrypt-production 
         kind: ClusterIssuer
     dnsNames:
-    - longhorn.home.adamkoro.com
+    - {{ longhorn_hostname }}
