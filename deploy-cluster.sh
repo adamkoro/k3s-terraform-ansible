@@ -26,7 +26,7 @@ cluster_install_full()
 }
 
 cluster_install(){
-    ansible-playbook ansible/${CLUSTER_NAME}-site.yml -i ansible/inventory/${CLUSTER_NAME}/hosts.ini --skip-tags "preparation,partitioning,package_install"
+    ansible-playbook ansible/${CLUSTER_NAME}-site.yml -i ansible/inventory/${CLUSTER_NAME}/hosts.ini --skip-tags "preparation,partitioning,package_install,database_install"
     exit 0
 }
 
