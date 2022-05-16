@@ -1,3 +1,8 @@
 /ansible/inventory/mgmt
 /ansible/inventory/prod
-/terraform
+/terraform/terraform.tfvars
+/terraform/.*
+/terraform/*.tfstate
+/terraform/*.backup
+*.bak*
+*.bak
