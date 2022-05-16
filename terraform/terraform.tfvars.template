@@ -1,0 +1,6 @@
+proxmox_api_url = ""
+proxmox_api_token_id = ""
+proxmox_api_token_secret = ""
+cloudinit_username = ""
+cloud_init_password = ""
+cloud_init_pub_ssh_key = ""
