@@ -1,3 +1,11 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: longhorn-system
+    labels:
+        app: longhorn
+---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
@@ -28,7 +36,7 @@ metadata:
 spec:
     secretName: longhorn-cert
     issuerRef:
-        name: letsencrypt-production 
+        name: letsencrypt-staging 
         kind: ClusterIssuer
     dnsNames:
     - {{ longhorn_hostname }}
