@@ -1,11 +1,4 @@
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-    name: longhorn-system
-    labels:
-        app: longhorn
----
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
@@ -17,13 +10,15 @@ spec:
     repo: https://charts.longhorn.io
     targetNamespace: longhorn-system
     valuesContent: |-
+        persistence: 
+            defaultClassReplicaCount: {{ longhorn_replica_number }}
         defaultSettings:
-            backupTarget: {{ longhorn_backup_path }}
+            backupTarget: "{{ longhorn_backup_path }}"
             defaultReplicaCount: {{ longhorn_replica_number }}
             createDefaultDiskLabeledNodes: {{ longhorn_disk_on_labeled_node }}
         ingress:
             enabled: {{ longhorn_ingress_enabled }}
-            host: {{ longhorn_hostname }}
+            host: "{{ longhorn_hostname }}"
             tls: true
             tlsSecret: longhorn-cert
 ---
