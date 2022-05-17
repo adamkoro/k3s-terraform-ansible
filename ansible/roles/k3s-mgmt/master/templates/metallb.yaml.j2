@@ -17,6 +17,7 @@ spec:
     repo: https://metallb.github.io/metallb
     targetNamespace: metallb-system
     valuesContent: |-
+        existingConfigMap: config
         rbac:
           create: true
 ---
