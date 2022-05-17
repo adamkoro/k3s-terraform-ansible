@@ -201,7 +201,7 @@
 - name: Copy kubeconfig from first remote master
   fetch:
     src: "~{{ ansible_user }}/.kube/config"
-    dest: "~/.kube/config.prod"
+    dest: "~/.kube/config.{{ kconfig_cluster_name }}"
     flat: yes
   when: ansible_host == hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0])
   tags:
