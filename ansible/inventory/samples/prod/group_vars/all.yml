@@ -10,16 +10,15 @@ k3s_server_location: /var/lib/rancher/k3s
 
 master_node_taints: "CriticalAddonsOnly=true:NoExecute"
 # This taints and labels allows Longhorn to run and schedule own pods for storage
-storage_node_taints: "StorageOnly=true:NoSchedule"
+#storage_node_taints: "StorageOnly=true:NoSchedule"
 storage_node_labels: "node.longhorn.io/create-default-disk={{ longhorn_disk_on_labeled_node }}"
 # If you're using Metallb like me, only one parameters is required that's --no-deploy servicelb, change others what u like
 datastore_endpoint: "postgres://{{ postgres_user + ':' + postgres_password + '@' + postgres_host + ':' + postgres_port + '/' + postgres_database + '?sslmode=' + postgres_ssl_mode  }}"
-extra_server_args: "--no-deploy servicelb --write-kubeconfig-mode 644 --kube-apiserver-arg default-not-ready-toleration-seconds=60 --kube-apiserver-arg default-unreachable-toleration-seconds=60 --kube-controller-arg node-monitor-period=60s --kube-controller-arg node-monitor-grace-period=60s --kubelet-arg node-status-update-frequency=60s"
-extra_agent_args: "--kubelet-arg node-status-update-frequency=60s"
+extra_server_args: "--no-deploy servicelb --write-kubeconfig-mode 644"
+extra_agent_args: ""
 
 # Kubeconfig cluster name
 kconfig_cluster_name: "prod"
-
 
 # Cloudflare credentials for Let's encrypt certs
 cloudflare_email: "YOUR_CLOUDFLARE_EMAIL"
@@ -51,8 +50,7 @@ apiserver_endpoint: "192.168.1.30"
 flannel_iface: "eth0"
 
 # Metallb settings
-metal_lb_speaker_tag_version: "v0.12.1"
-metal_lb_controller_tag_version: "v0.12.1"
+metal_lb_version: "v0.12.1"
 metal_lb_ip_range: "192.168.1.50-192.168.1.60"
 
 # NFS storage provisioner
