@@ -1,40 +1,20 @@
 ---
-- name: Unmount rancher device
-  mount:
-    path: '{{ rancher_mount_path }}'
-    state: absent
-  tags:
-    - partitioning
-
 - name: Unmount longhorn device
   mount:
     path: '{{ longhorn_mount_path }}'
     state: absent
   when: inventory_hostname in groups['storage']
   tags:
-    - partitioning
-
-- name: Read rancher device info
-  community.general.parted: device='{{ rancher_disk }}' unit=MiB
-  register: rancher_disk_info
-  tags:
-    - partitioning
+    - partitions
+    - longhorn_disk
 
 - name: Read longhorn device info
   community.general.parted: device='{{ longhorn_disk }}' unit=MiB
   register: longhorn_disk_info
   when: inventory_hostname in groups['storage']
   tags:
-    - partitioning
-
-- name: Remove all partitions from rancher
-  community.general.parted:
-    device: '{{ rancher_disk }}'
-    number: '{{ item.num }}'
-    state: absent
-  loop: '{{ rancher_disk_info.partitions }}'
-  tags:
-    - partitioning
+    - partitions
+    - longhorn_disk
 
 - name: Remove all partitions from longhorn
   community.general.parted:
@@ -44,4 +24,5 @@
   loop: '{{ longhorn_disk_info.partitions }}'
   when: inventory_hostname in groups['storage']
   tags:
-    - partitioning
+    - partitions
+    - longhorn_disk

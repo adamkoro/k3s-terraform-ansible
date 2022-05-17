@@ -28,8 +28,7 @@
     - /run/k3s
     - /var/lib/kubelet
     - /run/netns
-    - /var/lib/rancher
-    - /var/lib/longhorn
+    - /var/lib/rancher/k3s
   loop_control:
     loop_var: mounted_fs
   tags:
@@ -46,8 +45,8 @@
     - "{{ systemd_dir }}/k3s-storage.service"
     - /etc/rancher/k3s
     - /var/lib/kubelet
-    - /var/lib/rancher
-    - /var/lib/longhorn
+    - /var/lib/rancher/k3s
+    - /var/lib/longhorn/*
   tags:
   - remove_all
 
@@ -57,7 +56,14 @@
   tags:
   - remove_all
 
-- name: Remove created partitions
-  include_tasks: remove_partitions.yml
+- name: Remove Rancher disk partition
+  include_tasks: remove_rancher_disk_partitions.yml
   tags:
-    - partitioning
+    - partitions
+    - rancher_disk
+
+- name: Remove Longhorn disk partition
+  include_tasks: remove_longhorn_disk_partitions.yml
+  tags:
+    - partitions
+    - longhorn_disk

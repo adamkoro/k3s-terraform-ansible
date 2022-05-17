@@ -1,0 +1,25 @@
+---
+- name: Unmount rancher device
+  mount:
+    path: '{{ rancher_mount_path }}'
+    state: absent
+  tags:
+    - partitions
+    - rancher_disk
+
+- name: Read rancher device info
+  community.general.parted: device='{{ rancher_disk }}' unit=MiB
+  register: rancher_disk_info
+  tags:
+    - partitions
+    - rancher_disk
+
+- name: Remove all partitions from rancher
+  community.general.parted:
+    device: '{{ rancher_disk }}'
+    number: '{{ item.num }}'
+    state: absent
+  loop: '{{ rancher_disk_info.partitions }}'
+  tags:
+    - partitions
+    - rancher_disk
