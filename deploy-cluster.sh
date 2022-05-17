@@ -15,7 +15,7 @@ terraform_install()
     terraform plan
     terraform apply "-auto-approve"
     cd ../
-    ansible-playbook ansible/prod-site.yml -i ansible/inventory/prod/hosts.ini
+    ansible-playbook ansible/${CLUSTER_NAME}-site.yml -i ansible/inventory/${CLUSTER_NAME}/hosts.ini
     exit 0
 }
 
