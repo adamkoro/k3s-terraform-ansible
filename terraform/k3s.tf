@@ -7,7 +7,7 @@ resource "proxmox_vm_qemu" "database" {
     sockets = 1
     cpu = "host"    
     memory = 1024
-    balloon = 512
+    balloon = 1024
     agent = 1
     onboot = true 
     scsihw = "virtio-scsi-pci"
@@ -61,7 +61,7 @@ resource "proxmox_vm_qemu" "master" {
     sockets = 1
     cpu = "host"    
     memory = 2048
-    balloon = 1024
+    balloon = 2048
     agent = 1
     onboot = true 
     scsihw = "virtio-scsi-pci"
@@ -115,7 +115,7 @@ resource "proxmox_vm_qemu" "worker" {
     sockets = 1
     cpu = "host"    
     memory = 4096
-    balloon = 1024
+    balloon = 4096
     agent = 1
     onboot = true 
     scsihw = "virtio-scsi-pci"
@@ -168,7 +168,7 @@ resource "proxmox_vm_qemu" "storage" {
     sockets = 1
     cpu = "host"    
     memory = 1024
-    balloon = 512
+    balloon = 1024
     agent = 1
     onboot = true 
     scsihw = "virtio-scsi-pci"
