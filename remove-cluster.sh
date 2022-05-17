@@ -22,7 +22,7 @@ cluster_remove()
 
 cluster_remove_only()
 {
-    ansible-playbook ansible/${CLUSTER_NAME}-reset.yml -i ansible/inventory/${CLUSTER_NAME}/hosts.ini --become --skip-tags "partitioning"
+    ansible-playbook ansible/${CLUSTER_NAME}-reset.yml -i ansible/inventory/${CLUSTER_NAME}/hosts.ini --become --skip-tags "partitions"
     exit 0
 
 }
@@ -34,7 +34,7 @@ database_remove(){
 
 wipe_disks()
 {
-    ansible-playbook ansible/${CLUSTER_NAME}-reset.yml -i ansible/inventory/${CLUSTER_NAME}/hosts.ini --become --tags "partitioning"
+    ansible-playbook ansible/${CLUSTER_NAME}-reset.yml -i ansible/inventory/${CLUSTER_NAME}/hosts.ini --become --tags "partitions"
     exit 0
 }
 
