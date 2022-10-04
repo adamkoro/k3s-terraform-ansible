@@ -1,3 +1,33 @@
+- name: Unpack downloaded etcd release
+  shell: "tar -xf /tmp/etcd-{{ etcd_version }}-linux-amd64.tar.gz -C /tmp" 
+
+- name: Move etcd binary to /usr/local/bin
+  ansible.builtin.copy:
+    src: "/tmp/etcd-{{ etcd_version }}-linux-amd64/etcd"
+    dest: /usr/local/bin/etcd
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+
+- name: Move etcdctl binary to /usr/local/bin
+  ansible.builtin.copy:
+    src: "/tmp/etcd-{{ etcd_version }}-linux-amd64/etcdctl"
+    dest: /usr/local/bin/etcdctl
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+
+- name: Move etcdutl binary to /usr/local/bin
+  ansible.builtin.copy:
+    src: "/tmp/etcd-{{ etcd_version }}-linux-amd64/etcdutl"
+    dest: /usr/local/bin/etcdutl
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+
 - name: Copy etcd service
   template:
     src: "etcd.service.j2"
