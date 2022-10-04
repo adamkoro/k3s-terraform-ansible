@@ -1,5 +1,5 @@
 - name: Install nginx
-  community.general.zypper:
+  zypper:
     name: nginx
     state: present
     disable_recommends: yes
