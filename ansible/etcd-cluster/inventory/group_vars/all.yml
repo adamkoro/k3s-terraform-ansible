@@ -1,5 +1,4 @@
 etcd_version: "v3.5.5"
-etcd_name: "adamkoro-k3s"
 etcd_cluster_token: "adamkoro-etcd"
 
 lb_swap_disk: "/dev/sdb"
