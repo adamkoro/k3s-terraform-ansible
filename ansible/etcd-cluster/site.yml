@@ -4,11 +4,11 @@
   roles:
     - role: prereq
 
-#- hosts: member
-#  become: yes
-#  roles:
-#    - role: download
-#    - role: etcd
+- hosts: member
+  become: yes
+  roles:
+    - role: download
+    - role: etcd
 
 - hosts: loadbalancer
   become: yes
