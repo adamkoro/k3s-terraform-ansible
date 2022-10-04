@@ -1,0 +1,131 @@
+---
+- name: Create a new partition for Kubelet
+  community.general.parted:
+    device: '{{ kubelet_disk }}'
+    number: 1
+    state: present
+    label: gpt
+  tags:
+    - partitioning
+
+- name: Create a new partition for Rancher
+  community.general.parted:
+    device: '{{ rancher_disk }}'
+    number: 1
+    state: present
+    label: gpt
+  tags:
+    - partitioning
+
+- name: Create a new partition for Longhorn
+  community.general.parted:
+    device: '{{ longhorn_disk }}'
+    number: 1
+    state: present
+    label: gpt
+  when: inventory_hostname in groups['worker']
+  tags:
+    - partitioning
+
+- name: Create a filesystem for Kubelet
+  community.general.filesystem:
+    dev: '{{ kubelet_disk + "1" }}'
+    fstype: '{{ filesystem_type }}'
+    force: yes
+  tags:
+    - partitioning
+
+- name: Create a filesystem for Rancher
+  community.general.filesystem:
+    dev: '{{ rancher_disk + "1" }}'
+    fstype: '{{ filesystem_type }}'
+    force: yes
+  tags:
+    - partitioning
+
+- name: Create a filesystem for Longhorn
+  community.general.filesystem:
+    dev: '{{ longhorn_disk + "1" }}'
+    fstype: '{{ filesystem_type }}'
+    force: yes
+  when: inventory_hostname in groups['worker']
+  tags:
+    - partitioning
+
+- name: Get Kubelet disk UUID
+  command: blkid -s UUID -o value {{ kubelet_disk + '1' }}
+  register: uuid_kubelet
+  tags:
+    - partitioning
+
+- name: Get Rancher disk UUID
+  command: blkid -s UUID -o value {{ rancher_disk + '1' }}
+  register: uuid_rancher
+  tags:
+    - partitioning
+
+- name: Get Longhorn disk UUID
+  command: blkid -s UUID -o value {{ longhorn_disk + '1' }}
+  register: uuid_longhorn
+  when: inventory_hostname in groups['worker']
+  tags:
+    - partitioning
+
+- name: Add disk to fstab on master nodes
+  blockinfile:
+    path: /etc/fstab
+    state: present
+    block: |
+      UUID={{ uuid_kubelet.stdout }} {{ kubelet_mount_path }} {{ filesystem_type }} defaults 0 0
+      UUID={{ uuid_rancher.stdout }} {{ rancher_mount_path }} {{ filesystem_type }} defaults 0 0
+  when: inventory_hostname in groups['master']  
+  tags:
+    - partitioning
+
+- name: Add disk to fstab on worker nodes
+  blockinfile:
+    path: /etc/fstab
+    state: present
+    block: |
+      UUID={{ uuid_kubelet.stdout }} {{ kubelet_mount_path }} {{ filesystem_type }} defaults 0 0
+      UUID={{ uuid_rancher.stdout }} {{ rancher_mount_path }} {{ filesystem_type }} defaults 0 0
+      UUID={{ uuid_longhorn.stdout }} {{ longhorn_mount_path }} {{ filesystem_type }} defaults 0 0
+  when: inventory_hostname in groups['worker']  
+  tags:
+    - partitioning
+
+- name: Create directory for Kubelet mount
+  file:
+    path: '{{ kubelet_mount_path }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - partitioning
+
+- name: Create directory for Rancher mount
+  file:
+    path: '{{ rancher_mount_path }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - partitioning
+
+- name: Create directory for Longhorn mount
+  file:
+    path: '{{ longhorn_mount_path }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - partitioning
+  when: inventory_hostname in groups['worker']  
+
+- name: Mount disks
+  command: mount -a
+  tags:
+    - partitioning

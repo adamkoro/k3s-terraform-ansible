@@ -1,0 +1,83 @@
+- name: Create a filesystem for swap disk
+  community.general.filesystem:
+    dev: '{{ lb_swap_disk }}'
+    fstype: swap
+    force: yes
+  when: inventory_hostname in groups['loadbalancer']
+  tags:
+    - partitions
+
+- name: Create a filesystem for swap disk
+  community.general.filesystem:
+    dev: '{{ etcd_swap_disk }}'
+    fstype: swap
+    force: yes
+  tags:
+    - partitions
+
+- name: Create a filesystem for etcd disk
+  community.general.filesystem:
+    dev: '{{ etcd_disk }}'
+    fstype: '{{ etcd_filesystem_type }}'
+    force: yes
+  when:  inventory_hostname in groups['member']
+  tags:
+    - partitions
+
+- name: Get swap disk UUID
+  command: >-
+      {% if inventory_hostname in groups['loadbalancer'] %}
+        blkid -s UUID -o value {{ lb_swap_disk }}
+      {% else %}
+        blkid -s UUID -o value {{ etcd_swap_disk }}
+      {% endif %}
+  register: uuid_swap
+  tags:
+    - partitions
+
+- name: Get etcd disk UUID
+  command: blkid -s UUID -o value {{ etcd_disk }}
+  register: uuid_etcd
+  when:  inventory_hostname in groups['member']
+  tags:
+    - partitions
+
+- name: Add disks to fstab
+  blockinfile:
+    path: /etc/fstab
+    state: present
+    block: |
+      UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
+  when: inventory_hostname in groups['loadbalancer']
+  tags:
+    - partitions
+
+- name: Add disks to fstab
+  blockinfile:
+    path: /etc/fstab
+    state: present
+    block: |
+      UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
+      UUID={{ uuid_etcd.stdout }} {{ etcd_mount_path }} {{ etcd_filesystem_type }} defaults 0 0
+  when:  inventory_hostname in groups['member']
+  tags:
+    - partitions
+
+
+- name: Create directory for etcd mount
+  file:
+    path: '{{ etcd_mount_path }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - partitions
+
+- name: Enable swap and mount disks
+  command: "{{ item }}"
+  with_items:
+    - swapon --all
+    - mount -a
+  tags:
+    - partitions

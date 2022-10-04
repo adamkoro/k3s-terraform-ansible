@@ -1,6 +1,0 @@
----
-- hosts: master
-  gather_facts: yes
-  become: yes
-  roles:
-    - role: reset-mgmt

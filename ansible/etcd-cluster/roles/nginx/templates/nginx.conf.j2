@@ -1,0 +1,20 @@
+# Mabye on other distros
+#load_module /usr/lib/nginx/modules/ngx_stream_module.so;
+
+# openSUSE specific path
+load_module /usr/lib64/nginx/modules/ngx_stream_module.so;
+
+events {}
+
+stream {
+    upstream etcd_cluster {
+        server {{ hostvars[groups['member'][0]]['ansible_default_ipv4']['address'] }}:2379 max_fails=3 fail_timeout=5s;
+        server {{ hostvars[groups['member'][1]]['ansible_default_ipv4']['address'] }}:2379 max_fails=3 fail_timeout=5s;
+        server {{ hostvars[groups['member'][2]]['ansible_default_ipv4']['address'] }}:2379 max_fails=3 fail_timeout=5s;
+    }
+
+    server {
+        listen 2379;
+        proxy_pass etcd_cluster;
+    }
+}

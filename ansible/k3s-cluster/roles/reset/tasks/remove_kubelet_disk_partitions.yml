@@ -1,0 +1,25 @@
+---
+- name: Unmount kubelet device
+  mount:
+    path: '{{ kubelet_mount_path }}'
+    state: absent
+  tags:
+    - partitions
+    - kubelet_disk
+
+- name: Read kubelet device info
+  community.general.parted: device='{{ kubelet_disk }}' unit=MiB
+  register: kubelet_disk_info
+  tags:
+    - partitions
+    - kubelet_disk
+
+- name: Remove all partitions from kubelet
+  community.general.parted:
+    device: '{{ kubelet_disk }}'
+    number: '{{ item.num }}'
+    state: absent
+  loop: '{{ kubelet_disk_info.partitions }}'
+  tags:
+    - partitions
+    - kubelet_disk

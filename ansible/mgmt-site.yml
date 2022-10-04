@@ -1,9 +1,0 @@
----
-- hosts: master
-  gather_facts: yes
-  become: yes
-  roles:
-    - role: prereq
-    - role: download
-    - role: raspberrypi
-    - role: k3s-mgmt/master

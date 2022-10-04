@@ -1,0 +1,16 @@
+- hosts: etcd_cluster
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: prereq
+
+#- hosts: member
+#  become: yes
+#  roles:
+#    - role: download
+#    - role: etcd
+
+- hosts: loadbalancer
+  become: yes
+  roles:
+    - role: nginx
