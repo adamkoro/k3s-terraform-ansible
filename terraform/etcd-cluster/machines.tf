@@ -6,7 +6,7 @@ resource "proxmox_vm_qemu" "adamkoro-etcd-lb" {
   cores       = 2
   sockets     = 1
   cpu         = "EPYC-IBPB"
-  memory      = 512
+  memory      = 256
   agent       = 1
   onboot      = true
   scsihw      = "virtio-scsi-pci"
@@ -59,7 +59,7 @@ resource "proxmox_vm_qemu" "adamkoro-etcd-cluster" {
   cores       = 2
   sockets     = 1
   cpu         = "EPYC-IBPB"
-  memory      = 1024
+  memory      = 512
   agent       = 1
   onboot      = true
   scsihw      = "virtio-scsi-pci"
