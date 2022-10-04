@@ -1,0 +1,50 @@
+- name: Disable services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  failed_when: false
+  with_items:
+    - etcd
+    - nginx
+
+- name: Remove nginx
+  zypper:
+    name: nginx
+    state: removed
+
+- name: Unmount etcd device
+  mount:
+    path: '{{ etcd_mount_path }}'
+    state: unmounted
+  when:  inventory_hostname in groups['member']
+
+- name: Remove service files, binaries and data
+  file:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - /usr/local/bin/etcd
+    - /usr/local/bin/etcdctl
+    - /usr/local/bin/etcdutl
+    - '{{ etcd_mount_path }}'
+    - /etc/systemd/system/etcd.service
+    - /etc/systemd/system/nginx.service
+    - /etc/nginx
+
+- name: daemon_reload
+  systemd:
+    daemon_reload: yes
+
+- name: Get info from etcd disk
+  parted: device='{{ etcd_disk }}' unit=MiB
+  register: etcd_disk_info
+  when:  inventory_hostname in groups['member']
+
+- name: Clean filesystem on etcd device
+  parted:
+    device: '{{ etcd_disk }}'
+    number: '{{ item.num }}'
+    state: absent
+  loop: '{{ etcd_disk_info.partitions }}'
+  when:  inventory_hostname in groups['member']
