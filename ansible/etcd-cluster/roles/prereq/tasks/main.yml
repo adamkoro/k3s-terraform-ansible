@@ -6,6 +6,7 @@
   when: inventory_hostname in groups['loadbalancer']
   tags:
     - partitions
+    - swap
 
 - name: Create a filesystem for swap disk
   community.general.filesystem:
@@ -14,6 +15,7 @@
     force: yes
   tags:
     - partitions
+    - swap
 
 - name: Create a filesystem for etcd disk
   community.general.filesystem:
@@ -34,6 +36,7 @@
   register: uuid_swap
   tags:
     - partitions
+    - swap
 
 - name: Get etcd disk UUID
   command: blkid -s UUID -o value {{ etcd_disk }}
@@ -63,7 +66,6 @@
   tags:
     - partitions
 
-
 - name: Create directory for etcd mount
   file:
     path: '{{ etcd_mount_path }}'
@@ -75,9 +77,11 @@
     - partitions
 
 - name: Enable swap and mount disks
-  command: "{{ item }}"
-  with_items:
-    - swapon --all
-    - mount -a
+  command: swapon --all
+  tags:
+    - partitions
+
+- name: Mount disks
+  command: mount -a
   tags:
     - partitions
