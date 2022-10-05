@@ -1,5 +1,5 @@
 resource "proxmox_vm_qemu" "adamkoro-worker" {
-  count       = 2
+  count       = 3
   target_node = "proxmox-1"
   vmid        = "11${count.index + 7}"
   name        = "adamkoro-worker${count.index + 1}"
@@ -42,6 +42,13 @@ resource "proxmox_vm_qemu" "adamkoro-worker" {
     storage = "kingston-1"
     type    = "scsi"
     size    = "32G"
+    ssd     = 1
+  }
+  # longhorn
+  disk {
+    storage = "local-lvm"
+    type    = "scsi"
+    size    = "64G"
     ssd     = 1
   }
 

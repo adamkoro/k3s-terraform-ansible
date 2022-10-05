@@ -6,7 +6,7 @@ resource "proxmox_vm_qemu" "adamkoro-master" {
   cores       = 2
   sockets     = 1
   cpu         = "EPYC-IBPB"
-  memory      = 2048
+  memory      = 1024
   agent       = 1
   onboot      = true
   scsihw      = "virtio-scsi-pci"
@@ -35,6 +35,13 @@ resource "proxmox_vm_qemu" "adamkoro-master" {
     storage = "nvme-1"
     type    = "scsi"
     size    = "1G"
+    ssd     = 1
+  }
+  # kubelet
+  disk {
+    storage = "local-lvm"
+    type    = "scsi"
+    size    = "32G"
     ssd     = 1
   }
 
