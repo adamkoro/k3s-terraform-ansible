@@ -1,4 +1,4 @@
----
+
 - name: Clean previous runs of k3s-init
   systemd:
     name: k3s-init
@@ -18,7 +18,7 @@
   register: k3s_service
   template:
     src: "k3s-init.service.j2"
-    dest: "{{ systemd_dir }}/k3s-init.service"
+    dest: "/etc/systemd/system/k3s-init.service"
     owner: root
     group: root
     mode: 0644
@@ -79,7 +79,6 @@
     - manifests
     - cluster_update
 
-
 - name: Kill k3s-init temporary service which is used for initialization
   systemd:
     name: k3s-init
@@ -93,7 +92,7 @@
   register: k3s_service
   template:
     src: "k3s.service.j2"
-    dest: "{{ systemd_dir }}/k3s.service"
+    dest: "/etc/systemd/system/k3s.service"
     owner: root
     group: root
     mode: 0644
