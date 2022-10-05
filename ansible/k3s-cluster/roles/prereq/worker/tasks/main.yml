@@ -1,0 +1,106 @@
+- name: Install open-iscsi for Longhorn
+  community.general.zypper:
+    name: open-iscsi
+    state: present
+    disable_recommends: yes
+  tags:
+    - package_install
+
+- name: Create a filesystem for swap disk
+  community.general.filesystem:
+    dev: '{{ worker_swap_disk }}'
+    fstype: swap
+    force: yes
+  tags:
+    - partitions
+    - swap
+
+- name: Create a filesystem for kubelet disk
+  community.general.filesystem:
+    dev: '{{ worker_kubelet_disk }}'
+    fstype: '{{ filesystem_type }}'
+    force: yes
+  tags:
+    - partitions
+
+#- name: Create a filesystem for rancher disk
+#  community.general.filesystem:
+#    dev: '{{ worker_rancher_disk }}'
+#    fstype: '{{ filesystem_type }}'
+#    force: yes
+#  tags:
+#    - partitions
+
+- name: Create a filesystem for longhorn disk
+  community.general.filesystem:
+    dev: '{{ worker_longhorn_disk }}'
+    fstype: '{{ filesystem_type }}'
+    force: yes
+  tags:
+    - partitions
+
+- name: Get swap disk UUID
+  command: blkid -s UUID -o value {{ worker_swap_disk }}
+  register: uuid_swap
+  tags:
+    - partitions
+    - swap
+
+- name: Get kubelet disk UUID
+  command: blkid -s UUID -o value {{ worker_kubelet_disk }}
+  register: uuid_kubelet
+  tags:
+    - partitions
+
+#- name: Get rancher disk UUID
+#  command: blkid -s UUID -o value {{ worker_rancher_disk }}
+#  register: uuid_rancher
+#  tags:
+#    - partitions
+
+- name: Get longhorn disk UUID
+  command: blkid -s UUID -o value {{ worker_longhorn_disk }}
+  register: uuid_longhorn
+  tags:
+    - partitions
+
+- name: Add disks to fstab
+  blockinfile:
+    path: /etc/fstab
+    state: present
+    block: |
+      UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
+      UUID={{ uuid_kubelet.stdout }} {{ kubelet_mount_path }} {{ filesystem_type }} defaults 0 0
+      UUID={{ uuid_longhorn.stdout }} {{ longhorn_mount_path }} {{ filesystem_type }} defaults 0 0
+  tags:
+    - partitions
+
+- name: Create directory for mount
+  file:
+    path: '{{ kubelet_mount_path }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - partitions
+
+- name: Create directory for mount
+  file:
+    path: '{{ longhorn_mount_path }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - partitions
+
+#- name: Enable swap and mount disks
+#  command: swapon --all
+#  tags:
+#    - partitions
+
+- name: Mount disks
+  command: mount -a
+  tags:
+    - partitions

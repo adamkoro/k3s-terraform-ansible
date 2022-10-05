@@ -2,7 +2,7 @@
 - name: Copy K3s service file
   template:
     src: "k3s.service.j2"
-    dest: "{{ systemd_dir }}/k3s-worker.service"
+    dest: "/etc/systemd/system/k3s-worker.service"
     owner: root
     group: root
     mode: 0755
