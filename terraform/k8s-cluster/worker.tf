@@ -44,6 +44,13 @@ resource "proxmox_vm_qemu" "adamkoro-worker" {
     size    = "32G"
     ssd     = 1
   }
+  # rancher
+  disk {
+    storage = "kingston-1"
+    type    = "scsi"
+    size    = "32G"
+    ssd     = 1
+  }
   # longhorn
   disk {
     storage = "local-lvm"
