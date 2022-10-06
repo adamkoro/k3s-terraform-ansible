@@ -16,6 +16,14 @@
   tags:
     - partitions
 
+- name: Create a filesystem for rancher disk
+  community.general.filesystem:
+    dev: '{{ master_rancher_disk }}'
+    fstype: '{{ filesystem_type }}'
+    force: yes
+  tags:
+    - partitions
+
 - name: Get swap disk UUID
   command: blkid -s UUID -o value {{ master_swap_disk }}
   register: uuid_swap
@@ -29,6 +37,12 @@
   tags:
     - partitions
 
+- name: Get rancher disk UUID
+  command: blkid -s UUID -o value {{ master_rancher_disk }}
+  register: uuid_rancher
+  tags:
+    - partitions
+
 - name: Add disks to fstab
   blockinfile:
     path: /etc/fstab
@@ -36,6 +50,7 @@
     block: |
       UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
       UUID={{ uuid_kubelet.stdout }} {{ kubelet_mount_path }} {{ filesystem_type }} defaults 0 0
+      UUID={{ uuid_rancher.stdout }} {{ rancher_mount_path }} {{ filesystem_type }} defaults 0 0
   tags:
     - partitions
 
@@ -48,6 +63,17 @@
     mode: 0644
   tags:
     - partitions
+
+- name: Create directory for mount
+  file:
+    path: '{{ rancher_mount_path }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - partitions
+
 
 - name: Enable swap and mount disks
   command: swapon --all
