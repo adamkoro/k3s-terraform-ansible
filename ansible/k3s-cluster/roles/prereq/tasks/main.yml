@@ -6,3 +6,11 @@
     reload: yes
   tags:
     - preparation
+
+- name: Install open-iscsi for Longhorn
+  community.general.zypper:
+    name: open-iscsi
+    state: present
+    disable_recommends: no
+  tags:
+    - package_install
