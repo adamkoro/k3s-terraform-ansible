@@ -1,0 +1,58 @@
+k3s_version: v1.24.6+k3s1
+#k3s_version: v1.22.7+k3s1
+ansible_user: "adamkoro"
+# k3s_token is required  masters can talk together securely
+# this token should be alpha numeric only
+k3s_token: "adamkoro-prod"
+k3s_server_location: /var/lib/rancher/k3s
+
+# change these to your liking, the only required one is--no-deploy servicelb
+# yamllint disable-line rule:line-length
+master_node_taints: "CriticalAddonsOnly=true:NoExecute"
+extra_server_args: "--disable servicelb --write-kubeconfig-mode 644 --kube-apiserver-arg default-not-ready-toleration-seconds=30 --kube-apiserver-arg default-unreachable-toleration-seconds=30 --kube-controller-arg node-monitor-period=30s --kube-controller-arg node-monitor-grace-period=30s --kubelet-arg node-status-update-frequency=30s"
+extra_agent_args: "--kubelet-arg node-status-update-frequency=30s"
+datastore_endpoint: "http://192.168.1.20:2379"
+worker_node_labels: "node.longhorn.io/create-default-disk={{ longhorn_disk_on_labeled_node }}"
+
+# Kubeconfig cluster name
+kconfig_cluster_name: "adamkoro"
+
+# Cloudflare credentials for Let's encrypt certs
+cloudflare_email: ""
+cloudflare_api_key: ""
+
+# Longhorn setting
+longhorn_version: "1.3.2"
+longhorn_ingress_enabled: "true"
+longhorn_hostname: "longhorn.adamkoro.local"
+longhorn_replica_number: 3
+longhorn_disk_on_labeled_node: "true"
+longhorn_backup_path: "nfs://192.168.1.100:/mnt/toshiba-3/longhorn-backups"
+
+# Cert-manager setting
+cert_manager_version: "v1.9.1"
+
+# Kuve-VIP settings
+kube_vip_tag_version: "v0.5.0"
+apiserver_endpoint: "192.168.1.25"
+flannel_iface: "eth1"
+
+# Metallb settings
+metal_lb_version: "v0.12.1"
+metal_lb_ip_range: "192.168.1.35-192.168.1.40"
+
+#nfs_storage_host: "192.168.1.100"
+#nfs_storage_path: "/mnt/toshiba-3/kubernetes-storage"
+
+# Host disk settings
+filesystem_type: "ext4"
+master_kubelet_disk: "/dev/sdc"
+master_rancher_disk: "/dev/sdb"
+worker_kubelet_disk: "/dev/sdd"
+kubelet_mount_path: "/var/lib/kubelet"
+
+worker_rancher_disk: "/dev/sdc"
+rancher_mount_path: "/var/lib/rancher"
+
+worker_longhorn_disk: "/dev/sdb"
+longhorn_mount_path: "/var/lib/longhorn"
