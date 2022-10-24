@@ -1,15 +1,5 @@
-
-- name: Create a filesystem for swap disk
-  community.general.filesystem:
-    dev: '{{ master_swap_disk }}'
-    fstype: swap
-    force: yes
-  tags:
-    - partitions
-    - swap
-
 - name: Create a filesystem for kubelet disk
-  community.general.filesystem:
+  filesystem:
     dev: '{{ master_kubelet_disk }}'
     fstype: '{{ filesystem_type }}'
     force: yes
@@ -17,19 +7,12 @@
     - partitions
 
 - name: Create a filesystem for rancher disk
-  community.general.filesystem:
+  filesystem:
     dev: '{{ master_rancher_disk }}'
     fstype: '{{ filesystem_type }}'
     force: yes
   tags:
     - partitions
-
-- name: Get swap disk UUID
-  command: blkid -s UUID -o value {{ master_swap_disk }}
-  register: uuid_swap
-  tags:
-    - partitions
-    - swap
 
 - name: Get kubelet disk UUID
   command: blkid -s UUID -o value {{ master_kubelet_disk }}
@@ -48,7 +31,6 @@
     path: /etc/fstab
     state: present
     block: |
-      UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
       UUID={{ uuid_kubelet.stdout }} {{ kubelet_mount_path }} {{ filesystem_type }} defaults 0 0
       UUID={{ uuid_rancher.stdout }} {{ rancher_mount_path }} {{ filesystem_type }} defaults 0 0
   tags:
@@ -71,12 +53,6 @@
     owner: root
     group: root
     mode: 0644
-  tags:
-    - partitions
-
-
-- name: Enable swap and mount disks
-  command: swapon --all
   tags:
     - partitions
 
