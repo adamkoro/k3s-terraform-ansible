@@ -1,8 +1,6 @@
 etcd_version: "v3.5.5" # etcd version
 etcd_cluster_token: "adamkoro-etcd" # token for etcd cluster
 
-lb_swap_disk: "/dev/sdb" # loadbalancer node swap disk
-etcd_filesystem_type: "xfs" # ectd disk filesystem type
-etcd_swap_disk: "/dev/sdc" # etcd node swap disk
-etcd_disk: "/dev/sdb" # ectd disk
+etcd_filesystem_type: "ext4" # ectd disk filesystem type
+etcd_disk: "/dev/vdc" # ectd disk
 etcd_mount_path: "/var/lib/etcd" # ectd database path

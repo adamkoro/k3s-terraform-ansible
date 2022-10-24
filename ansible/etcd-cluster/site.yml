@@ -1,12 +1,11 @@
 - hosts: etcd_cluster
   gather_facts: yes
   become: yes
-  roles:
-    - role: prereq
 
 - hosts: member
   become: yes
   roles:
+    - role: prereq
     - role: download
     - role: etcd
 
