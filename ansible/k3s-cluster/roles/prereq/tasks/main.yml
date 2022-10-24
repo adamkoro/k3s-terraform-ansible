@@ -8,7 +8,7 @@
     - preparation
 
 - name: Install open-iscsi for Longhorn
-  community.general.zypper:
+  zypper:
     name: open-iscsi
     state: present
     disable_recommends: no
