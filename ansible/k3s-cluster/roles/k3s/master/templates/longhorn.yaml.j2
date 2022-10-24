@@ -30,7 +30,7 @@ metadata:
 spec:
     secretName: longhorn-cert
     issuerRef:
-        name: letsencrypt-staging
+        name: home-local
         kind: ClusterIssuer
     dnsNames:
     - {{ longhorn_hostname }}
