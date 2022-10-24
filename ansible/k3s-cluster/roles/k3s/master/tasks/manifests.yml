@@ -1,4 +1,3 @@
----
 - name: Create manifests directory on first master
   file:
     path: /var/lib/rancher/k3s/server/manifests
@@ -51,7 +50,7 @@
   when: ansible_host == hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0])
   tags:
     - manifests
-
+    
 - name: Copy longhorn manifest to first master
   template:
     src: "longhorn.yaml.j2"
@@ -62,14 +61,14 @@
   when: ansible_host == hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0])
   tags:
     - manifests
-
-- name: Copy nfs-client-provisioner manifest to first master
-  template:
-    src: "nfs-client-provisioner.yaml.j2"
-    dest: "/var/lib/rancher/k3s/server/manifests/nfs-client-provisioner.yaml"
-    owner: root
-    group: root
-    mode: 0644
-  when: ansible_host == hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0])
-  tags:
-    - manifests
+#
+#- name: Copy nfs-client-provisioner manifest to first master
+#  template:
+#    src: "nfs-client-provisioner.yaml.j2"
+#    dest: "/var/lib/rancher/k3s/server/manifests/nfs-client-provisioner.yaml"
+#    owner: root
+#    group: root
+#    mode: 0644
+#  when: ansible_host == hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0])
+#  tags:
+#    - manifests
