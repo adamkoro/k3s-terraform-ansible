@@ -21,8 +21,7 @@ resource "libvirt_domain" "etcd_cluster" {
     volume_id = element(libvirt_volume.etcd_data_disk.*.id, count.index)
   }
   network_interface {
-    bridge         = "br0"
-    wait_for_lease = true
+    bridge = "br0"
   }
   cloudinit = element(libvirt_cloudinit_disk.cloud_init.*.id, count.index)
 }

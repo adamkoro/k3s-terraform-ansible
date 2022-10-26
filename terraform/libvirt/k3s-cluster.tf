@@ -58,8 +58,7 @@ resource "libvirt_domain" "worker" {
     volume_id = element(libvirt_volume.worker_longhorn_data_disk.*.id, count.index)
   }
   network_interface {
-    bridge         = "br0"
-    wait_for_lease = true
+    bridge = "br0"
   }
   cloudinit = element(libvirt_cloudinit_disk.worker_cloud_init.*.id, count.index)
 }

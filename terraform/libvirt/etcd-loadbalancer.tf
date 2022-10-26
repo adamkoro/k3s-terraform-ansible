@@ -17,8 +17,7 @@ resource "libvirt_domain" "etcd_loadbalancer" {
     volume_id = libvirt_volume.lb_swap_disk.id
   }
   network_interface {
-    bridge         = "br0"
-    wait_for_lease = true
+    bridge = "br0"
   }
   cloudinit = libvirt_cloudinit_disk.lb_cloud_init.id
 }
