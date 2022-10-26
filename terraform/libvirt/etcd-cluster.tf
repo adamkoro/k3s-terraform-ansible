@@ -4,23 +4,25 @@ resource "libvirt_domain" "etcd_cluster" {
   cpu {
     mode = "host-model"
   }
+  machine = "q35"
+  xml {
+    xslt = file("cdrom-model.xsl")
+  }
   autostart = true
   vcpu      = 2
   memory    = 512
   disk {
     volume_id = element(libvirt_volume.root_disk.*.id, count.index)
-    scsi      = true
   }
   disk {
     volume_id = element(libvirt_volume.swap_disk.*.id, count.index)
-    scsi      = true
   }
   disk {
     volume_id = element(libvirt_volume.etcd_data_disk.*.id, count.index)
-    scsi      = true
   }
   network_interface {
-    bridge = "br0"
+    bridge         = "br0"
+    wait_for_lease = true
   }
   cloudinit = element(libvirt_cloudinit_disk.cloud_init.*.id, count.index)
 }
@@ -76,12 +78,12 @@ EOF
   network_config = <<EOF
 version: 2
 ethernets:
-  eth1:
+  eth0:
     addresses: 
     - 192.168.1.2${count.index + 1}/24
     gateway4: 192.168.1.254
     nameservers:
-      addresses: [ 192.168.1.10 ]
-      search: [ adamkoro.local ]
+      addresses: [ ${var.cloud_init_nameserver} ]
+      search: [ ${var.cloud_init_search_domain} ]
 EOF
 }

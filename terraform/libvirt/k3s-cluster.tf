@@ -7,21 +7,21 @@ resource "libvirt_domain" "master" {
   autostart = true
   vcpu      = 2
   memory    = 2048
+  machine   = "q35"
+  xml {
+    xslt = file("cdrom-model.xsl")
+  }
   disk {
     volume_id = element(libvirt_volume.master_root_disk.*.id, count.index)
-    scsi      = true
   }
   disk {
     volume_id = element(libvirt_volume.master_swap_disk.*.id, count.index)
-    scsi      = true
   }
   disk {
     volume_id = element(libvirt_volume.master_kubelet_data_disk.*.id, count.index)
-    scsi      = true
   }
   disk {
     volume_id = element(libvirt_volume.master_rancher_data_disk.*.id, count.index)
-    scsi      = true
   }
   network_interface {
     bridge = "br0"
@@ -35,31 +35,31 @@ resource "libvirt_domain" "worker" {
   cpu {
     mode = "host-model"
   }
+  machine = "q35"
+  xml {
+    xslt = file("cdrom-model.xsl")
+  }
   autostart = true
   vcpu      = 4
   memory    = 3072
   disk {
     volume_id = element(libvirt_volume.worker_root_disk.*.id, count.index)
-    scsi      = true
   }
   disk {
     volume_id = element(libvirt_volume.worker_swap_disk.*.id, count.index)
-    scsi      = true
   }
   disk {
     volume_id = element(libvirt_volume.worker_kubelet_data_disk.*.id, count.index)
-    scsi      = true
   }
   disk {
     volume_id = element(libvirt_volume.worker_rancher_data_disk.*.id, count.index)
-    scsi      = true
   }
   disk {
     volume_id = element(libvirt_volume.worker_longhorn_data_disk.*.id, count.index)
-    scsi      = true
   }
   network_interface {
-    bridge = "br0"
+    bridge         = "br0"
+    wait_for_lease = true
   }
   cloudinit = element(libvirt_cloudinit_disk.worker_cloud_init.*.id, count.index)
 }
@@ -126,13 +126,13 @@ EOF
   network_config = <<EOF
 version: 2
 ethernets:
-  eth1:
+  eth0:
     addresses: 
     - 192.168.1.2${count.index + 6}/24
     gateway4: 192.168.1.254
     nameservers:
-      addresses: [ 192.168.1.10 ]
-      search: [ adamkoro.local ]
+      addresses: [ ${var.cloud_init_nameserver} ]
+      search: [ ${var.cloud_init_search_domain} ]
 EOF
 }
 
@@ -204,13 +204,13 @@ EOF
   network_config = <<EOF
 version: 2
 ethernets:
-  eth1:
+  eth0:
     addresses: 
     - 192.168.1.3${count.index + 1}/24
     gateway4: 192.168.1.254
     nameservers:
-      addresses: [ 192.168.1.10 ]
-      search: [ adamkoro.local ]
+      addresses: [ ${var.cloud_init_nameserver} ]
+      search: [ ${var.cloud_init_search_domain} ]
 EOF
 }
 

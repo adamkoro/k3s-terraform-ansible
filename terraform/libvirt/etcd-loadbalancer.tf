@@ -6,16 +6,19 @@ resource "libvirt_domain" "etcd_loadbalancer" {
   autostart = true
   vcpu      = 2
   memory    = 512
+  machine   = "q35"
+  xml {
+    xslt = file("cdrom-model.xsl")
+  }
   disk {
     volume_id = libvirt_volume.lb_root_disk.id
-    scsi      = true
   }
   disk {
     volume_id = libvirt_volume.lb_swap_disk.id
-    scsi      = true
   }
   network_interface {
-    bridge = "br0"
+    bridge         = "br0"
+    wait_for_lease = true
   }
   cloudinit = libvirt_cloudinit_disk.lb_cloud_init.id
 }
@@ -61,12 +64,14 @@ EOF
   network_config = <<EOF
 version: 2
 ethernets:
-  eth1:
+  eth0:
+    dhcp4: false
+    dhcp6: false
     addresses: 
     - 192.168.1.20/24
     gateway4: 192.168.1.254
     nameservers:
-      addresses: [ 192.168.1.10 ]
-      search: [ adamkoro.local ]
+      addresses: [ ${var.cloud_init_nameserver} ]
+      search: [ ${var.cloud_init_search_domain} ]
 EOF
 }
