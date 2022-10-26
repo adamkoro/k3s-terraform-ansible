@@ -11,6 +11,7 @@
 ### Terraform
 - Terraform provider made only for Proxmox (I'm using this in my homelab for hypervisor).
 - Each cluster section contains own Terraform directory and setting. Example: etcd cluster has own playbook and k3s has own too.
+- Q35 vm fix get from this issue, thank you so much: https://github.com/dmacvicar/terraform-provider-libvirt/issues/885#issuecomment-967143916
 
 ### Ansible
 - Each cluster section contains own playbook, like in Terraform.
