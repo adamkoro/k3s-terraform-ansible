@@ -1,0 +1,30 @@
+- name: Proxy node setup
+  hosts: all
+  remote_user: adamkoro
+  become: yes
+  tasks:
+    ###############
+    ## swap disk
+    ###############
+    - name: Create a filesystem for swap
+      filesystem:
+        dev: /dev/vdb
+        fstype: swap
+        force: yes
+
+    - name: Get swap disk UUID
+      command: blkid -s UUID -o value /dev/vdb
+      register: uuid_swap
+
+    ###############
+    ## mount created disks
+    ###############
+    - name: Add disks to fstab
+      blockinfile:
+        path: /etc/fstab
+        state: present
+        block: |
+          UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
+
+    - name: Enable swap
+      command: swapon -a
