@@ -1,12 +1,12 @@
 resource "libvirt_domain" "control-plane" {
   count = var.control-plane_vm_count
-  name  = "${var.control-plane_domain_name}${count.index + 1}"
+  name  = "${var.control-plane_domain_name}-${count.index + 1}"
   cpu {
     mode = "host-passthrough"
   }
   autostart = true
   vcpu      = 2
-  memory    = 1536
+  memory    = 1024
   machine   = "q35"
   xml {
     xslt = file("cdrom-model.xsl")
@@ -38,7 +38,7 @@ resource "libvirt_domain" "control-plane" {
 }
 
 resource "libvirt_volume" "control-plane_root_disk" {
-  name           = "${var.control-plane_domain_name}${count.index + 1}-root.qcow2"
+  name           = "${var.control-plane_domain_name}-${count.index + 1}-root.qcow2"
   pool           = var.root_volume_pool
   base_volume_id = var.base_root_volume_path
 
@@ -46,14 +46,14 @@ resource "libvirt_volume" "control-plane_root_disk" {
 }
 
 resource "libvirt_volume" "control-plane_swap_disk" {
-  name  = "${var.control-plane_domain_name}${count.index + 1}-swap.qcow2"
+  name  = "${var.control-plane_domain_name}-${count.index + 1}-swap.qcow2"
   pool  = var.swap_volume_pool
   size  = 1073741824
   count = var.control-plane_vm_count
 }
 
 resource "libvirt_volume" "control-plane_kubelet_data_disk" {
-  name  = "${var.control-plane_domain_name}${count.index + 1}-kubelet.qcow2"
+  name  = "${var.control-plane_domain_name}-${count.index + 1}-kubelet.qcow2"
   pool  = var.kubelet_data_volume_pool
   count = var.control-plane_vm_count
   size  = 16106127360
@@ -72,8 +72,8 @@ resource "libvirt_cloudinit_disk" "control-plane_cloud_init" {
   count          = var.control-plane_vm_count
   user_data      = <<EOF
 #cloud-config
-hostname: ${var.control-plane_domain_name}${count.index + 1}
-fqdn: ${var.control-plane_domain_name}${count.index + 1}.adamkoro.local
+hostname: ${var.control-plane_domain_name}-${count.index + 1}
+fqdn: ${var.control-plane_domain_name}-${count.index + 1}.adamkoro.local
 manage_etc_hosts: true
 users:
   - name: ${var.cloud_init_username}

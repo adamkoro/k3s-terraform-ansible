@@ -1,6 +1,6 @@
 resource "libvirt_domain" "etcd" {
   count = var.etcd_vm_count
-  name  = "${var.etcd_domain_name}${count.index + 1}"
+  name  = "${var.etcd_domain_name}-${count.index + 1}"
   cpu {
     mode = "host-passthrough"
   }
@@ -9,7 +9,7 @@ resource "libvirt_domain" "etcd" {
     xslt = file("cdrom-model.xsl")
   }
   autostart = true
-  vcpu      = 2
+  vcpu      = 1
   memory    = 512
   disk {
     volume_id = element(libvirt_volume.etcd_root_disk.*.id, count.index)
@@ -35,21 +35,21 @@ resource "libvirt_domain" "etcd" {
 }
 
 resource "libvirt_volume" "etcd_root_disk" {
-  name           = "${var.etcd_domain_name}${count.index + 1}-root.qcow2"
+  name           = "${var.etcd_domain_name}-${count.index + 1}-root.qcow2"
   pool           = var.root_volume_pool
   base_volume_id = var.base_root_volume_path
   count          = var.etcd_vm_count
 }
 
 resource "libvirt_volume" "etcd_swap_disk" {
-  name  = "${var.etcd_domain_name}${count.index + 1}-swap.qcow2"
+  name  = "${var.etcd_domain_name}-${count.index + 1}-swap.qcow2"
   pool  = var.swap_volume_pool
   size  = 1073741824
   count = var.etcd_vm_count
 }
 
 resource "libvirt_volume" "etcd_data_disk" {
-  name  = "${var.etcd_domain_name}${count.index + 1}-data.qcow2"
+  name  = "${var.etcd_domain_name}-${count.index + 1}-data.qcow2"
   pool  = var.etcd_data_volume_pool
   count = var.etcd_vm_count
   size  = 10737418240
@@ -61,8 +61,8 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
   count          = var.etcd_vm_count
   user_data      = <<EOF
 #cloud-config
-hostname: ${var.etcd_domain_name}${count.index + 1}
-fqdn: ${var.etcd_domain_name}${count.index + 1}.adamkoro.local
+hostname: ${var.etcd_domain_name}-${count.index + 1}
+fqdn: ${var.etcd_domain_name}-${count.index + 1}.adamkoro.local
 manage_etc_hosts: true
 users:
   - name: ${var.cloud_init_username}

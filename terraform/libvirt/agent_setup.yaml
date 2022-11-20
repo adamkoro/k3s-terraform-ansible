@@ -52,7 +52,7 @@
         block: |
           UUID={{ uuid_kubelet.stdout }} /var/lib/kubelet xfs defaults 0 0
           UUID={{ uuid_rancher.stdout }} /var/lib/rancher xfs defaults 0 0
-          UUID={{ uuid_longhorn.stdout }} /var/lib/rancher xfs defaults 0 0
+          UUID={{ uuid_longhorn.stdout }} /var/lib/longhorn xfs defaults 0 0
 
     - name: Create directory for mounts
       file:

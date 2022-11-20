@@ -1,6 +1,6 @@
 resource "libvirt_domain" "agent" {
   count = var.agent_vm_count
-  name  = "${var.agent_domain_name}${count.index + 1}"
+  name  = "${var.agent_domain_name}-${count.index + 1}"
   cpu {
     mode = "host-passthrough"
   }
@@ -9,7 +9,7 @@ resource "libvirt_domain" "agent" {
     xslt = file("cdrom-model.xsl")
   }
   autostart = true
-  vcpu      = 4
+  vcpu      = 2
   memory    = 2048
   disk {
     volume_id = element(libvirt_volume.agent_root_disk.*.id, count.index)
@@ -45,21 +45,21 @@ resource "libvirt_volume" "agent_root_disk" {
 }
 
 resource "libvirt_volume" "agent_kubelet_data_disk" {
-  name  = "${var.agent_domain_name}${count.index + 1}-kubelet.qcow2"
+  name  = "${var.agent_domain_name}-${count.index + 1}-kubelet.qcow2"
   pool  = var.kubelet_data_volume_pool
   count = var.agent_vm_count
   size  = 32212254720
 }
 
 resource "libvirt_volume" "agent_rancher_data_disk" {
-  name  = "${var.agent_domain_name}${count.index + 1}-rancher.qcow2"
+  name  = "${var.agent_domain_name}-${count.index + 1}-rancher.qcow2"
   pool  = var.rancher_data_volume_pool
   count = var.agent_vm_count
   size  = 21474836480
 }
 
 resource "libvirt_volume" "agent_longhorn_data_disk" {
-  name  = "${var.agent_domain_name}${count.index + 1}-longhorn.qcow2"
+  name  = "${var.agent_domain_name}-${count.index + 1}-longhorn.qcow2"
   pool  = var.longhorn_data_volume_pool
   count = var.agent_vm_count
   size  = 64424509440
@@ -71,8 +71,8 @@ resource "libvirt_cloudinit_disk" "agent_cloud_init" {
   count          = var.agent_vm_count
   user_data      = <<EOF
 #cloud-config
-hostname: ${var.agent_domain_name}${count.index + 1}
-fqdn: ${var.agent_domain_name}${count.index + 1}.adamkoro.local
+hostname: ${var.agent_domain_name}-${count.index + 1}
+fqdn: ${var.agent_domain_name}-${count.index + 1}.adamkoro.local
 manage_etc_hosts: true
 users:
   - name: ${var.cloud_init_username}
