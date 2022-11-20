@@ -1,0 +1,93 @@
+- name: Clean previous runs of k3s-init
+  systemd:
+    name: k3s-init
+    state: stopped
+  failed_when: false
+
+- name: Clean previous runs of k3s-init
+  command: systemctl reset-failed k3s-init
+  failed_when: false
+  changed_when: false
+  args:
+    warn: false
+
+- name: Init cluster on etcd nodes
+  command:
+    cmd: "systemd-run -p RestartSec=2 \
+                      -p Restart=on-failure \
+                      --unit=k3s-init \
+                      k3s server {{ etcd_init_args }}"
+    creates: "{{ systemd_dir }}/k3s.service"
+  args:
+    warn: false
+  when: inventory_hostname in groups['etcd']
+
+- name: Wait for node-token
+  wait_for:
+    path: "{{ k3s_server_location }}/server/node-token"
+  when: inventory_hostname == groups['etcd'][0]
+
+- name: Register node-token file access mode
+  stat:
+    path: "{{ k3s_server_location }}/server/node-token"
+  register: p
+  when: inventory_hostname == groups['etcd'][0]
+
+- name: Change file access node-token
+  file:
+    path: "{{ k3s_server_location }}/server/node-token"
+    mode: "g+rx,o+rx"
+  when: inventory_hostname == groups['etcd'][0]
+
+- name: Read node-token from etcd
+  slurp:
+    path: "{{ k3s_server_location }}/server/node-token"
+  register: node_token
+  when: inventory_hostname == groups['etcd'][0]
+
+- name: Store etcd node-token
+  set_fact:
+    token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
+  when: inventory_hostname == groups['etcd'][0]
+
+- name: Restore node-token file access
+  file:
+    path: "{{ k3s_server_location }}/server/node-token"
+    mode: "{{ p.stat.mode }}"
+  when: inventory_hostname == groups['etcd'][0]
+
+- name: "Wait for first etcd node port"
+  wait_for:
+    host: "{{ hostvars[groups['etcd'][0]].flannel_node_ip }}"
+    port: 6443
+    delay: 10
+  when: inventory_hostname in groups['control_plane']
+
+- name: Init cluster on control-plane nodes
+  command:
+    cmd: "systemd-run -p RestartSec=2 \
+                      -p Restart=on-failure \
+                      --unit=k3s-init \
+                      k3s server {{ control_plane_init_args }}"
+    creates: "{{ systemd_dir }}/k3s.service"
+  args:
+    warn: false
+  when: inventory_hostname in groups['control_plane']
+
+- name: Verify that all etcd nodes actually joined
+  command:
+    cmd: k3s kubectl get nodes -l "node-role.kubernetes.io/etcd=true" -o=jsonpath="{.items[*].metadata.name}"
+  register: nodes
+  until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['etcd'] | length)
+  retries: "{{ retry_count | default(20) }}"
+  delay: 10
+  when: inventory_hostname in groups['control_plane']
+
+- name: Verify that all control-plane nodes actually joined
+  command:
+    cmd: k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
+  register: nodes
+  until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['control_plane'] | length)
+  retries: "{{ retry_count | default(20) }}"
+  delay: 10
+  when: inventory_hostname in groups['control_plane']

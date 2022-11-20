@@ -1,0 +1,100 @@
+- name: Install packages
+  zypper:
+    name: "{{ item }}"
+    state: present
+    disable_recommends: no
+  loop:
+      - nginx
+      - pacemaker
+      - corosync
+      - crmsh
+
+- name: Generate corosync authkey
+  shell: corosync-keygen
+
+- name: Read corosync authkey
+  slurp:
+    src: "/etc/corosync/authkey"
+  register: corosync_authkey
+  when: inventory_hostname == groups['loadbalancer'][0]
+
+- name: Store etcd node-token
+  set_fact:
+    token: "{{ corosync_authkey.content | b64decode  }}"
+  when: inventory_hostname == groups['loadbalancer'][0]
+
+- name: Synchronizing authkey to other nodes
+  copy:
+    content: "{{ hostvars[groups['loadbalancer'][0]]['token'] }}"
+    dest: /etc/corosync/authkey
+    mode: 0400
+  when: inventory_hostname != groups['loadbalancer'][0]
+
+- name: Create corosync log file
+  file:
+    path: "/var/log/corosync.log"
+    state: touch
+
+- name: Copy nginx loadbalancer config
+  template:
+    src: "nginx.conf.j2"
+    dest: "/etc/nginx/nginx.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy corosync config
+  template:
+    src: "corosync.conf.j2"
+    dest: "/etc/corosync/corosync.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable and check nginx,corosync and pacemaker service
+  systemd:
+    name: "{{ item }}"
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  loop:
+      - nginx
+      - corosync
+      - pacemaker
+
+- name: Disable stonith device
+  shell: crm configure property stonith-enabled=false
+  when: inventory_hostname == groups['loadbalancer'][0]
+
+- name: Remove quorum policy
+  shell: crm configure property no-quorum-policy=ignore
+  when: inventory_hostname == groups['loadbalancer'][0]
+
+
+- name: Setup virtual ip for cluster
+  shell: crm configure primitive virtual_ip ocf:heartbeat:IPaddr2 params ip="{{ cluster_endpoint }}" cidr_netmask="32" op monitor interval="10s" meta migration-threshold="10"
+  when: inventory_hostname == groups['loadbalancer'][0]
+
+- name: Setup nginx HA
+  shell: crm configure primitive k3s_api ocf:heartbeat:nginx configfile=/etc/nginx/nginx.conf op start timeout="40s" interval="0" op stop timeout="60s" interval="0" op monitor interval="10s" timeout="60s" meta migration-threshold="10"
+  when: inventory_hostname == groups['loadbalancer'][0]
+
+- name: Create group for created resources
+  shell: crm configure group k3s_lb virtual_ip k3s_api
+  when: inventory_hostname == groups['loadbalancer'][0]
+
+- name: Wait for ectd nodes loadbalancer port
+  wait_for:
+    host: "{{ cluster_endpoint }}"
+    port: 6444
+    delay: 10
+    connect_timeout: 15
+    timeout: 30
+
+- name: Wait for master nodes loadbalancer port
+  wait_for:
+    host: "{{ cluster_endpoint }}"
+    port: 6443
+    delay: 10
+    connect_timeout: 15
+    timeout: 30
