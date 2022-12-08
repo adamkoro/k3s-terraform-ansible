@@ -1,7 +1,5 @@
 # **k3s-terraform-ansible** for make kubernetes install and config easy
 
-## **INFO - WARNING**
-- **Only etcd** cluster work well, **k3s cluster is under development**.
 
 ## **Branches**
 - **main** -> Maintained version of the repo
