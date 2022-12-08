@@ -6,7 +6,7 @@ resource "libvirt_domain" "control-plane" {
   }
   autostart = true
   vcpu      = 2
-  memory    = 1024
+  memory    = 2048
   machine   = "q35"
   xml {
     xslt = file("cdrom-model.xsl")
@@ -91,7 +91,7 @@ chpasswd:
     ${var.cloud_init_username}:${var.cloud_init_password}
   expire: False
 bootcmd:
-  - sysctl vm.swappiness=10
+  - sysctl vm.swappiness=5
 EOF
   network_config = <<EOF
 version: 1

@@ -9,8 +9,8 @@ resource "libvirt_domain" "agent" {
     xslt = file("cdrom-model.xsl")
   }
   autostart = true
-  vcpu      = 2
-  memory    = 2048
+  vcpu      = 4
+  memory    = 4096
   disk {
     volume_id = element(libvirt_volume.agent_root_disk.*.id, count.index)
   }
@@ -90,7 +90,7 @@ chpasswd:
     ${var.cloud_init_username}:${var.cloud_init_password}
   expire: False
 bootcmd:
-  - sysctl vm.swappiness=80
+  - sysctl vm.swappiness=5
 EOF
   network_config = <<EOF
 version: 1

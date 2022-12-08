@@ -9,7 +9,7 @@ resource "libvirt_domain" "etcd" {
     xslt = file("cdrom-model.xsl")
   }
   autostart = true
-  vcpu      = 1
+  vcpu      = 2
   memory    = 512
   disk {
     volume_id = element(libvirt_volume.etcd_root_disk.*.id, count.index)
