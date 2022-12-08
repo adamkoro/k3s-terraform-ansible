@@ -18,8 +18,6 @@
                       --unit=k3s-init \
                       k3s server {{ etcd_init_args }}"
     creates: "{{ systemd_dir }}/k3s.service"
-  args:
-    warn: false
   when: inventory_hostname in groups['etcd']
 
 - name: Wait for node-token
@@ -70,8 +68,6 @@
                       --unit=k3s-init \
                       k3s server {{ control_plane_init_args }}"
     creates: "{{ systemd_dir }}/k3s.service"
-  args:
-    warn: false
   when: inventory_hostname in groups['control_plane']
 
 - name: Verify that all etcd nodes actually joined
