@@ -10,7 +10,7 @@ resource "libvirt_domain" "agent" {
   }
   autostart = true
   vcpu      = 4
-  memory    = 4096
+  memory    = 3072
   disk {
     volume_id = element(libvirt_volume.agent_root_disk.*.id, count.index)
   }
