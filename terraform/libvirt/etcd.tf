@@ -44,7 +44,7 @@ resource "libvirt_volume" "etcd_root_disk" {
 resource "libvirt_volume" "etcd_swap_disk" {
   name  = "${var.etcd_domain_name}-${count.index + 1}-swap.qcow2"
   pool  = var.swap_volume_pool
-  size  = 1073741824
+  size  = 536870912
   count = var.etcd_vm_count
 }
 
