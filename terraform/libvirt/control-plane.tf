@@ -6,7 +6,7 @@ resource "libvirt_domain" "control-plane" {
   }
   autostart = true
   vcpu      = 2
-  memory    = 2048
+  memory    = 1536
   machine   = "q35"
   xml {
     xslt = file("cdrom-model.xsl")
@@ -48,7 +48,7 @@ resource "libvirt_volume" "control-plane_root_disk" {
 resource "libvirt_volume" "control-plane_swap_disk" {
   name  = "${var.control-plane_domain_name}-${count.index + 1}-swap.qcow2"
   pool  = var.swap_volume_pool
-  size  = 1073741824
+  size  = 536870912
   count = var.control-plane_vm_count
 }
 
