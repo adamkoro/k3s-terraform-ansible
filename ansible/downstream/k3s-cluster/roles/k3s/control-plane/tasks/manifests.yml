@@ -48,6 +48,14 @@
     owner: root
     group: root
     mode: 0644
+
+- name: Copy ingress-nginx manifest to first master
+  template:
+    src: "ingress-nginx.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/ingress-nginx.yaml"
+    owner: root
+    group: root
+    mode: 0644
 #
 #- name: Copy nfs-client-provisioner manifest to first master
 #  template:
