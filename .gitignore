@@ -5,4 +5,6 @@ terraform.tfvars
 *.bak*
 *.bak
 pihole*
-variables.tf
+*.tfvars
+all.yml
+all.yaml
