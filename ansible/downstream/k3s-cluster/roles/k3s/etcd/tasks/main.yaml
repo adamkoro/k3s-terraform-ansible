@@ -19,4 +19,6 @@
     daemon_reload: yes
     state: restarted
     enabled: yes
+  tags: 
+    - update_k3s
 

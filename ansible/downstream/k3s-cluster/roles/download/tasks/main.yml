@@ -7,6 +7,8 @@
     group: root
     mode: 0755
   when: ansible_facts.architecture == "x86_64"
+  tags:
+    - update_k3s
 
 #- name: Download k3s binary x64
 #  get_url:

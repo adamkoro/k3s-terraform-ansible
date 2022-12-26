@@ -29,7 +29,8 @@
     state: restarted
     enabled: yes
   tags:
-    cluster_update
+    - cluster_update
+    - update_k3s
 
 - name: Create directory .kube
   file:

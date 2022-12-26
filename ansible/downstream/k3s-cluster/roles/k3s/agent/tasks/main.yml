@@ -31,3 +31,4 @@
     enabled: yes
   tags:
     - cluster_update
+    - update_k3s
