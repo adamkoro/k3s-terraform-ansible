@@ -6,5 +6,5 @@ terraform.tfvars
 *.bak
 pihole*
 *.tfvars
-all.yml
-all.yaml
+all.yml*
+all.yaml*
