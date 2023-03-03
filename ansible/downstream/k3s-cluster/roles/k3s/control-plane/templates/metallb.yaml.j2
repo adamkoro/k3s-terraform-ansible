@@ -16,20 +16,21 @@ spec:
     version: {{ metal_lb_version }}
     repo: https://metallb.github.io/metallb
     targetNamespace: metallb-system
-    valuesContent: |-
-        existingConfigMap: config
-        rbac:
-          create: true
 ---
-apiVersion: v1
-kind: ConfigMap
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
 metadata:
+  name: default
   namespace: metallb-system
-  name: config
-data:
-  config: |
-    address-pools:
-    - name: default
-      protocol: layer2
-      addresses:
-      - {{ metal_lb_ip_range }}
+spec:
+  addresses:
+  - {{ metal_lb_ip_range }}
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: default
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - default
