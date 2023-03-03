@@ -24,16 +24,8 @@ spec:
                 cert-manager.io/cluster-issuer: "home-local"
             tls: true
             tlsSecret: longhorn-cert
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-    name: longhorn-cert
-    namespace: longhorn-system
-spec:
-    secretName: longhorn-cert
-    issuerRef:
-        name: home-local
-        kind: ClusterIssuer
-    dnsNames:
-    - {{ longhorn_hostname }}
+        longhornUI.replicas: 1
+        longhornRecoveryBackend.replicas: 1
+        longhornAdmissionWebhook.replicas: 1
+        longhornUI.replicas: 1
+        
