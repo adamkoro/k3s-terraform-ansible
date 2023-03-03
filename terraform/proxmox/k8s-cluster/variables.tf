@@ -1,5 +1,9 @@
 variable "vm_count"{
-    default = 2
+    default = 3
+}
+
+variable "ssh_private_key" {
+    type = string
 }
 
 variable "cloud_init_username"{

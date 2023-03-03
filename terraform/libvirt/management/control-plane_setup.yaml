@@ -1,0 +1,72 @@
+- name: Control-plane node setup
+  hosts: all
+  remote_user: adamkoro
+  become: yes
+  tasks:
+    ###############
+    ## swap disk
+    ###############
+    - name: Create a filesystem for swap
+      filesystem:
+        dev: /dev/vdb
+        fstype: swap
+        force: yes
+
+    - name: Get swap disk UUID
+      command: blkid -s UUID -o value /dev/vdb
+      register: uuid_swap
+
+    ###############
+    ## kubelet disk
+    ###############
+    - name: Create a filesystem for kubelet
+      filesystem:
+        dev: /dev/vdc
+        fstype: xfs
+        force: yes
+
+    - name: Get kubelet disk UUID
+      command: blkid -s UUID -o value /dev/vdc
+      register: uuid_kubelet
+
+    ###############
+    ## rancher disk
+    ###############
+    - name: Create a filesystem for rancher
+      filesystem:
+        dev: /dev/vdd
+        fstype: xfs
+        force: yes
+
+    - name: Get rancher disk UUID
+      command: blkid -s UUID -o value /dev/vdd
+      register: uuid_rancher
+
+    ###############
+    ## mount created disks
+    ###############
+    - name: Add disks to fstab
+      blockinfile:
+        path: /etc/fstab
+        state: present
+        block: |
+          UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
+          UUID={{ uuid_kubelet.stdout }} /var/lib/kubelet xfs defaults 0 0
+          UUID={{ uuid_rancher.stdout }} /var/lib/rancher xfs defaults 0 0
+
+    - name: Create directory for mounts
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: 0644
+      loop:
+        - "/var/lib/rancher"
+        - "/var/lib/kubelet"
+
+    - name: Enable swap
+      command: swapon -a
+
+    - name: Mount disks
+      command: mount -a

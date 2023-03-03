@@ -1,0 +1,32 @@
+- name: Proxy node setup
+  hosts: all
+  remote_user: adamkoro
+  become: true
+  tasks:
+    ###############
+    ## swap disk
+    ###############
+    - name: Create a filesystem for swap
+      community.general.filesystem:
+        dev: /dev/vdb
+        fstype: swap
+        force: true
+
+    - name: Get swap disk UUID
+      ansible.builtin.command: blkid -s UUID -o value /dev/vdb
+      register: uuid_swap
+      changed_when: false
+
+    ###############
+    ## mount created disks
+    ###############
+    - name: Add disks to fstab
+      blockinfile:
+        path: /etc/fstab
+        state: present
+        block: |
+          UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
+
+    - name: Enable swap
+      ansible.builtin.command: swapon -a
+      changed_when: false
