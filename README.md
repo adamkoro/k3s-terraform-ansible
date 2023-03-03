@@ -38,6 +38,9 @@
   - 1 node control plane 
   - 3 node agent
 
+- [Ansible playbook](ansible/downstream/)
+- [Terraform](terraform/libvirt/downstream/)
+
 ### Features
 - Crm cluster with pacemaker and corosync for nginx loadbalancer
 - Metallb for loadbalancer service
