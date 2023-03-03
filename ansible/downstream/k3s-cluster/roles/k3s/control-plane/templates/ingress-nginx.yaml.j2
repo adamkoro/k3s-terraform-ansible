@@ -11,29 +11,30 @@ metadata:
 spec:
     chart: ingress-nginx
     repo: https://kubernetes.github.io/ingress-nginx
-    targetNamespace: ingress-nginx
-    version: v4.4.0
-    set:
+    targetNamespace: kube-system
+    version: v4.4.2
     valuesContent: |-
         controller:
-            kind: DaemonSet
-            hostNetwork: true
-            nodeSelector:
-                node.kubernetes.io/control-plane: "true"
-            tolerations:
-                - key: "CriticalAddonsOnly"
-                  operator: "Equal"
-                  value: "true"
-                  effect: "NoExecute"
-            hostPort:
-                enabled: true
-            service:
-                enabled: true
-            publishService:
-                enabled: true
-            metrics:
-                enabled: false
-                serviceMonitor:
-                    enabled: false
-            config:
-                use-forwarded-headers: "true"
+          kind: DaemonSet
+          hostNetwork: true
+          nodeSelector:
+            node.kubernetes.io/control-plane: "true"
+          tolerations:
+            - key: "CriticalAddonsOnly"
+              operator: "Equal"
+              value: "true"
+              effect: "NoExecute"
+          hostPort:
+            enabled: true
+          service:
+            enabled: true
+          publishService:
+            enabled: true
+          metrics:
+            enabled: false
+            serviceMonitor:
+              enabled: false
+          config:
+            use-forwarded-headers: "true"
+          ingressClassResource:
+            default: true
