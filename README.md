@@ -19,8 +19,10 @@
 
 
 ## Management cluster
-- Architecture -> 1 node install
-- Single node K3S install
+#### Architecture 
+- 1 node install
+  - Single node K3S install
+
 - **UNDER DEVELOP!** [Ansible playbook](ansible/management/)
 - [Terraform](terraform/libvirt/management/)
 
@@ -28,11 +30,13 @@
 - Rancher instance
 
 ## Downstream cluster
-- Architecture -> 9 node install
-- 2 node proxy
-- 3 node etcd
-- 1 node control plane 
-- 3 node agent
+
+#### Architecture
+- 9 node install
+  - 2 node proxy
+  - 3 node etcd
+  - 1 node control plane 
+  - 3 node agent
 
 ### Features
 - Crm cluster with pacemaker and corosync for nginx loadbalancer
@@ -48,7 +52,9 @@
 ### **IMPORTANT!** I'm not use external etcd cluster anymore, so I leave it in , but I'm not maintain it.
 - [Ansible playbook](ansible/downstream/etcd-cluster/)
 - [Terraform](terraform/proxmox/etcd-cluster/)
-- Architecture -> 4 node install
+
+#### Architecture
+- 4 node install
     - 1 loadbalancer
     - 3 etcd hosts
     - Loadbalancer: simple nginx tcp loadbalancer
