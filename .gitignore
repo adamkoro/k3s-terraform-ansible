@@ -8,3 +8,4 @@ pihole*
 *.tfvars
 all.yml*
 all.yaml*
+ansible/management
