@@ -43,6 +43,19 @@
       register: uuid_rancher
 
     ###############
+    ## longhorn disk
+    ###############
+    - name: Create a filesystem for longhorn
+      filesystem:
+        dev: /dev/vde
+        fstype: xfs
+        force: yes
+
+    - name: Get rancher disk UUID
+      command: blkid -s UUID -o value /dev/vde
+      register: uuid_longhorn
+
+    ###############
     ## mount created disks
     ###############
     - name: Add disks to fstab
@@ -53,6 +66,7 @@
           UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
           UUID={{ uuid_kubelet.stdout }} /var/lib/kubelet xfs defaults 0 0
           UUID={{ uuid_rancher.stdout }} /var/lib/rancher xfs defaults 0 0
+          UUID={{ uuid_longhorn.stdout }} /var/lib/longhorn xfs defaults 0 0
 
     - name: Create directory for mounts
       file:
@@ -64,6 +78,7 @@
       loop:
         - "/var/lib/rancher"
         - "/var/lib/kubelet"
+        - "/var/lib/longhorn"
 
     - name: Enable swap
       command: swapon -a

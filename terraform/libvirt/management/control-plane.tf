@@ -6,7 +6,7 @@ resource "libvirt_domain" "control-plane" {
   }
   autostart = true
   vcpu      = 4
-  memory    = 3072
+  memory    = 4096
   machine   = "q35"
   xml {
     xslt = file("cdrom-model.xsl")
@@ -22,6 +22,9 @@ resource "libvirt_domain" "control-plane" {
   }
   disk {
     volume_id = element(libvirt_volume.control-plane_rancher_data_disk.*.id, count.index)
+  }
+  disk {
+    volume_id = element(libvirt_volume.control-plane_longhorn_data_disk.*.id, count.index)
   }
   network_interface {
     bridge = "br0"
@@ -64,6 +67,13 @@ resource "libvirt_volume" "control-plane_rancher_data_disk" {
   pool  = var.rancher_data_volume_pool
   count = var.control-plane_vm_count
   size  = 21474836480
+}
+
+resource "libvirt_volume" "control-plane_longhorn_data_disk" {
+  name  = "${var.control-plane_domain_name}${count.index + 1}-longhorn.qcow2"
+  pool  = var.longhorn_data_volume_pool
+  count = var.control-plane_vm_count
+  size  = 53687091200
 }
 
 resource "libvirt_cloudinit_disk" "control-plane_cloud_init" {
