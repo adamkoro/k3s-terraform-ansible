@@ -1,0 +1,69 @@
+- name: Create manifests directory on first master
+  file:
+    path: /var/lib/rancher/k3s/server/manifests
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
+
+- name: Copy vip to first master
+  template:
+    src: "kube-vip.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/vip.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
+
+- name: Copy cert-manager manifest to first master
+  template:
+    src: "cert-manager.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/cert-manager.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
+
+- name: Copy cert-manager issuer manifest to first master
+  template:
+    src: "cert-manager-issuer.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/cert-manager-issuer.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
+
+- name: Copy longhorn manifest to first master
+  template:
+    src: "longhorn.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/longhorn.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
+
+- name: Copy ingress-nginx manifest to first master
+  template:
+    src: "ingress-nginx.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/ingress-nginx.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
+
+- name: Copy rancher manifest to first master
+  template:
+    src: "rancher.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/rancher.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests

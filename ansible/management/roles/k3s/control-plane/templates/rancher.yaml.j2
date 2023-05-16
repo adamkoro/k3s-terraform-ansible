@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: cattle-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+    name: rancher
+    namespace: kube-system
+spec:
+    chart: rancher
+    version: {{ rancher_version }}
+    repo: https://releases.rancher.com/server-charts/stable
+    targetNamespace: cattle-system
+    valuesContent: |-
+        hostname: '{{ rancher_hostname }}'
+        replicas: {{ rancher_replica_number }}
+        bootstrapPassword: '{{ rancher_password }}'
+        ingress.ingressClassName: nginx
+        ingress.extraAnnotations: 
+            - cert-manager.io/cluster-issuer: "letsencrypt-staging"
+        ingress.tls.source: secret
+        ingress.tls.secretName: rancher-adamkoro-com
