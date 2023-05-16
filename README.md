@@ -23,7 +23,7 @@
 - 3 node install
   - All node are control plane
 
-- **UNDER DEVELOP!** [Ansible playbook](ansible/management/)
+- [Ansible playbook](ansible/management/)
 - [Terraform](terraform/libvirt/management/)
 
 ### Features
