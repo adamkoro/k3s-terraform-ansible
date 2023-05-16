@@ -28,6 +28,10 @@
 
 ### Features
 - Rancher instance
+- Longhorn for storage
+- Cert-manager for certificate management
+- Nginx ingress controller
+- Kube-vip for loadbalancer
 
 ## Downstream cluster
 
