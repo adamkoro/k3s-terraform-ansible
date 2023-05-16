@@ -67,3 +67,13 @@
     mode: 0644
   tags:
     - manifests
+
+- name: Copy metallb manifest to first master
+  template:
+    src: "metallb.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/metallb.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
