@@ -85,3 +85,7 @@ variable "longhorn_data_volume_pool" {
   type = string
 }
 
+variable "cloud_init_disk_pool" {
+  type = string
+}
+

@@ -45,7 +45,7 @@ resource "libvirt_volume" "proxy_swap_disk" {
 }
 
 resource "libvirt_cloudinit_disk" "proxy_cloud_init" {
-  pool           = var.root_volume_pool
+  pool           = var.cloud_init_disk_pool
   name           = "${var.proxy_domain_name}-${count.index + 1}-cloud-init.iso"
   count          = var.proxy_vm_count
   user_data      = <<EOF
@@ -64,6 +64,7 @@ users:
       - ${file("${var.cloud_init_sshkey}")}
 ssh_pwauth: true
 disable_root: false
+timezone: Europe/Budapest
 chpasswd:
   list: |
     ${var.cloud_init_username}:${var.cloud_init_password}
