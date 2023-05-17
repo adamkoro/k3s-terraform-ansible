@@ -21,17 +21,18 @@
 ## Management cluster
 #### Architecture 
 - 3 node install
-  - All node are control plane
+  - All the nodes are control plane
 
 - [Ansible playbook](ansible/management/)
 - [Terraform](terraform/libvirt/management/)
 
 ### Features
-- Rancher instance
-- Longhorn for storage
-- Cert-manager for certificate management
+- Rancher
+- Longhorn
+- Cert-manager
 - Nginx ingress controller
-- Kube-vip for loadbalancer
+- Kube-vip
+- Metallb
 
 ## Downstream cluster
 
