@@ -3,6 +3,7 @@
   remote_user: adamkoro
   become: true
   vars:
+    filesystem_type: xfs
     swap_disk: /dev/vdb
     kubelet_disk: /dev/vdc
     kubelet_mount: /var/lib/kubelet
@@ -42,9 +43,9 @@
     - name: Format kubelet disk
       community.general.filesystem:
         dev: "{{ kubelet_disk }}"
-        fstype: xfs
+        fstype: "{{ filesystem_type }}"
         force: true
-      when: fs_kubelet.rc != 0 or fs_kubelet.stdout != "xfs"
+      when: fs_kubelet.rc != 0 or fs_kubelet.stdout != filesystem_type
 
     - name: Get kubelet disk UUID
       ansible.builtin.command: blkid -s UUID -o value {{ kubelet_disk }}
@@ -62,9 +63,9 @@
     - name: Create a filesystem for rancher
       community.general.filesystem:
         dev: "{{ rancher_disk }}"
-        fstype: xfs
+        fstype: "{{ filesystem_type }}"
         force: true
-      when: fs_rancher.rc != 0 or fs_rancher.stdout != "xfs"
+      when: fs_rancher.rc != 0 or fs_rancher.stdout != filesystem_type
 
     - name: Get rancher disk UUID
       ansible.builtin.command: blkid -s UUID -o value {{ rancher_disk }}
@@ -82,9 +83,9 @@
     - name: Create a filesystem for longhorn
       community.general.filesystem:
         dev: "{{ longhorn_disk }}"
-        fstype: xfs
+        fstype: "{{ filesystem_type }}"
         force: true
-      when: fs_longhorn.rc != 0 or fs_longhorn.stdout != "xfs"
+      when: fs_longhorn.rc != 0 or fs_longhorn.stdout != filesystem_type
 
     - name: Get longhorn disk UUID
       ansible.builtin.command: blkid -s UUID -o value {{ longhorn_disk }}
@@ -100,9 +101,9 @@
         state: present
         block: |
           UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
-          UUID={{ uuid_kubelet.stdout }} /var/lib/kubelet xfs defaults 0 0
-          UUID={{ uuid_rancher.stdout }} /var/lib/rancher xfs defaults 0 0
-          UUID={{ uuid_longhorn.stdout }} /var/lib/longhorn xfs defaults 0 0
+          UUID={{ uuid_kubelet.stdout }} {{ kubelet_mount }} {{ filesystem_type }} defaults 0 0
+          UUID={{ uuid_rancher.stdout }} {{ rancher_mount }} {{ filesystem_type }} defaults 0 0
+          UUID={{ uuid_longhorn.stdout }} {{ longhorn_mount }} {{ filesystem_type }} defaults 0 0
 
     - name: Create directory for mounts
       ansible.builtin.file:
@@ -112,9 +113,9 @@
         group: root
         mode: "0644"
       loop:
-        - "/var/lib/rancher"
-        - "/var/lib/kubelet"
-        - "/var/lib/longhorn"
+        - "{{ kubelet_mount }}"
+        - "{{ rancher_mount }}"
+        - "{{ longhorn_mount }}"
 
     - name: Enable swap
       ansible.builtin.command: swapon -a
