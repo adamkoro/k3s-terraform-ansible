@@ -24,6 +24,8 @@
   wait_for:
     path: "{{ k3s_server_location }}/server/node-token"
   when: inventory_hostname == groups['control_plane'][0]
+  tags: 
+    - cluster_update
 
 - name: Register node-token file access mode
   stat:
@@ -42,11 +44,15 @@
     path: "{{ k3s_server_location }}/server/node-token"
   register: node_token
   when: inventory_hostname == groups['control_plane'][0]
+  tags: 
+    - cluster_update
 
 - name: Store control_plane node-token
   set_fact:
     token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
   when: inventory_hostname == groups['control_plane'][0]
+  tags: 
+    - cluster_update
 
 - name: Restore node-token file access
   file:
