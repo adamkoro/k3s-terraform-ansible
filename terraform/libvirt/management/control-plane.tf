@@ -5,7 +5,7 @@ resource "libvirt_domain" "control-plane" {
     mode = "host-passthrough"
   }
   autostart = true
-  vcpu      = 6
+  vcpu      = 4
   memory    = 6144
   machine   = "q35"
   xml {
