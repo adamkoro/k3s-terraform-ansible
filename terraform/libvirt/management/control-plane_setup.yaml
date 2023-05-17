@@ -1,65 +1,101 @@
 - name: Control-plane node setup
   hosts: all
   remote_user: adamkoro
-  become: yes
+  become: true
+  vars:
+    swap_disk: /dev/vdb
+    kubelet_disk: /dev/vdc
+    kubelet_mount: /var/lib/kubelet
+    rancher_disk: /dev/vdd
+    rancher_mount: /var/lib/rancher
+    longhorn_disk: /dev/vde
+    longhorn_mount: /var/lib/longhorn
   tasks:
     ###############
     ## swap disk
     ###############
+    - name: Check if swap disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value "{{ swap_disk }}"
+      register: fs_swap
+      changed_when: false
+
     - name: Create a filesystem for swap
-      filesystem:
-        dev: /dev/vdb
+      community.general.filesystem:
+        dev: "{{ swap_disk }}"
         fstype: swap
-        force: yes
+        force: true
+      when: fs_swap.rc != 0 or fs_swap.stdout != "swap"
 
     - name: Get swap disk UUID
-      command: blkid -s UUID -o value /dev/vdb
+      ansible.builtin.command: blkid -s UUID -o value {{ swap_disk }}
       register: uuid_swap
+      changed_when: false
 
     ###############
     ## kubelet disk
     ###############
-    - name: Create a filesystem for kubelet
-      filesystem:
-        dev: /dev/vdc
+    - name: Check if kubelet disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value {{ kubelet_disk }}
+      register: fs_kubelet
+      changed_when: false
+
+    - name: Format kubelet disk
+      community.general.filesystem:
+        dev: "{{ kubelet_disk }}"
         fstype: xfs
-        force: yes
+        force: true
+      when: fs_kubelet.rc != 0 or fs_kubelet.stdout != "xfs"
 
     - name: Get kubelet disk UUID
-      command: blkid -s UUID -o value /dev/vdc
+      ansible.builtin.command: blkid -s UUID -o value {{ kubelet_disk }}
       register: uuid_kubelet
+      changed_when: false
 
     ###############
     ## rancher disk
     ###############
+    - name: Check if kubelet disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value {{ rancher_disk }}
+      register: fs_rancher
+      changed_when: false
+
     - name: Create a filesystem for rancher
-      filesystem:
-        dev: /dev/vdd
+      community.general.filesystem:
+        dev: "{{ rancher_disk }}"
         fstype: xfs
-        force: yes
+        force: true
+      when: fs_rancher.rc != 0 or fs_rancher.stdout != "xfs"
 
     - name: Get rancher disk UUID
-      command: blkid -s UUID -o value /dev/vdd
+      ansible.builtin.command: blkid -s UUID -o value {{ rancher_disk }}
       register: uuid_rancher
+      changed_when: false
 
     ###############
     ## longhorn disk
     ###############
-    - name: Create a filesystem for longhorn
-      filesystem:
-        dev: /dev/vde
-        fstype: xfs
-        force: yes
+    - name: Check if kubelet disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value {{ longhorn_disk }}
+      register: fs_longhorn
+      changed_when: false
 
-    - name: Get rancher disk UUID
-      command: blkid -s UUID -o value /dev/vde
+    - name: Create a filesystem for longhorn
+      community.general.filesystem:
+        dev: "{{ longhorn_disk }}"
+        fstype: xfs
+        force: true
+      when: fs_longhorn.rc != 0 or fs_longhorn.stdout != "xfs"
+
+    - name: Get longhorn disk UUID
+      ansible.builtin.command: blkid -s UUID -o value {{ longhorn_disk }}
       register: uuid_longhorn
+      changed_when: false
 
     ###############
     ## mount created disks
     ###############
     - name: Add disks to fstab
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /etc/fstab
         state: present
         block: |
@@ -69,19 +105,21 @@
           UUID={{ uuid_longhorn.stdout }} /var/lib/longhorn xfs defaults 0 0
 
     - name: Create directory for mounts
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: directory
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
       loop:
         - "/var/lib/rancher"
         - "/var/lib/kubelet"
         - "/var/lib/longhorn"
 
     - name: Enable swap
-      command: swapon -a
+      ansible.builtin.command: swapon -a
+      changed_when: false
 
     - name: Mount disks
-      command: mount -a
+      ansible.builtin.command: mount -a
+      changed_when: false
