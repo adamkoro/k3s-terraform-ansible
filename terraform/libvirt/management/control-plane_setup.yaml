@@ -103,3 +103,19 @@
     - name: Mount disks
       ansible.builtin.command: mount -a
       changed_when: false
+
+    - name: Remove the wrong kernel-default-base package
+      community.general.zypper:
+        name: kernel-default-base
+        state: absent
+
+    - name: Install kernel-default package
+      community.general.zypper:
+        name: kernel-default
+        state: present
+      notify:
+        - Reboot
+
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
