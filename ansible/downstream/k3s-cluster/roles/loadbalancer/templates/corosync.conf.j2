@@ -26,6 +26,11 @@ nodelist {
         name: {{ hostvars[groups['loadbalancer'][1]]['ansible_facts']['nodename'] }}
         nodeid: 2
     }
+    node {
+        ring0_addr: {{ hostvars[groups['loadbalancer'][2]]['ansible_default_ipv4']['address'] }}
+        name: {{ hostvars[groups['loadbalancer'][2]]['ansible_facts']['nodename'] }}
+        nodeid: 3
+    }
 }
 
 logging {
