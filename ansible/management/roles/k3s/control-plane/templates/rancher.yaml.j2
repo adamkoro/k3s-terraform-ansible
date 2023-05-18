@@ -24,4 +24,8 @@ spec:
                 cert-manager.io/cluster-issuer: "letsencrypt-production"
             tls:
                 source: secret
-                secretName: rancher-adamkoro-com
+                secretName: rancher-tls-cert
+        global:
+            cattle:
+                psp:
+                    enabled: false
