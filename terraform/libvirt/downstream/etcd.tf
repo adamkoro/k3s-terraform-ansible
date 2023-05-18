@@ -10,7 +10,7 @@ resource "libvirt_domain" "etcd" {
   }
   autostart = true
   vcpu      = 2
-  memory    = 512
+  memory    = 1024
   disk {
     volume_id = element(libvirt_volume.etcd_root_disk.*.id, count.index)
   }
@@ -23,39 +23,18 @@ resource "libvirt_domain" "etcd" {
   network_interface {
     bridge = "br0"
   }
-  cloudinit = element(libvirt_cloudinit_disk.cloud_init.*.id, count.index)
+  cloudinit = element(libvirt_cloudinit_disk.etcd_cloud_init.*.id, count.index)
 
   provisioner "local-exec" {
-    command = "while ! nc -q0 192.168.1.2${count.index + 3} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
+    command = "while ! nc -q0 192.168.1.2${count.index + 4} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
   }
 
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '192.168.1.2${count.index + 3},' --private-key ${var.ssh_private_key} etcd_setup.yaml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '192.168.1.2${count.index + 4},' --private-key ${var.ssh_private_key} etcd_setup.yaml"
   }
 }
 
-resource "libvirt_volume" "etcd_root_disk" {
-  name           = "${var.etcd_domain_name}-${count.index + 1}-root.qcow2"
-  pool           = var.root_volume_pool
-  source = var.base_root_volume_path
-  count          = var.etcd_vm_count
-}
-
-resource "libvirt_volume" "etcd_swap_disk" {
-  name  = "${var.etcd_domain_name}-${count.index + 1}-swap.qcow2"
-  pool  = var.swap_volume_pool
-  size  = 536870912
-  count = var.etcd_vm_count
-}
-
-resource "libvirt_volume" "etcd_data_disk" {
-  name  = "${var.etcd_domain_name}-${count.index + 1}-data.qcow2"
-  pool  = var.etcd_data_volume_pool
-  count = var.etcd_vm_count
-  size  = 10737418240
-}
-
-resource "libvirt_cloudinit_disk" "cloud_init" {
+resource "libvirt_cloudinit_disk" "etcd_cloud_init" {
   pool           = var.root_volume_pool
   name           = "${var.etcd_domain_name}${count.index + 1}-cloud-init.iso"
   count          = var.etcd_vm_count
@@ -128,7 +107,7 @@ config:
       name: eth0
       subnets:
       - type: static
-        address: '192.168.1.2${count.index + 3}'
+        address: '192.168.1.2${count.index + 4}'
         netmask: '255.255.255.0'
         gateway: '192.168.1.254'
     - type: nameserver

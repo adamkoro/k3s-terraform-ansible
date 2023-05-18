@@ -10,9 +10,12 @@ resource "libvirt_domain" "agent" {
   }
   autostart = true
   vcpu      = 4
-  memory    = 3072
+  memory    = 8192
   disk {
     volume_id = element(libvirt_volume.agent_root_disk.*.id, count.index)
+  }
+  disk {
+    volume_id = element(libvirt_volume.agent_swap_disk.*.id, count.index)
   }
   disk {
     volume_id = element(libvirt_volume.agent_kubelet_data_disk.*.id, count.index)
@@ -35,34 +38,6 @@ resource "libvirt_domain" "agent" {
   provisioner "local-exec" {
     command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '192.168.1.3${count.index + 1},' --private-key ${var.ssh_private_key} agent_setup.yaml"
   }
-}
-
-resource "libvirt_volume" "agent_root_disk" {
-  name           = "${var.agent_domain_name}${count.index + 1}-root.qcow2"
-  pool           = var.root_volume_pool
-  source = var.base_root_volume_path
-  count          = var.agent_vm_count
-}
-
-resource "libvirt_volume" "agent_kubelet_data_disk" {
-  name  = "${var.agent_domain_name}-${count.index + 1}-kubelet.qcow2"
-  pool  = var.kubelet_data_volume_pool
-  count = var.agent_vm_count
-  size  = 32212254720
-}
-
-resource "libvirt_volume" "agent_rancher_data_disk" {
-  name  = "${var.agent_domain_name}-${count.index + 1}-rancher.qcow2"
-  pool  = var.rancher_data_volume_pool
-  count = var.agent_vm_count
-  size  = 21474836480
-}
-
-resource "libvirt_volume" "agent_longhorn_data_disk" {
-  name  = "${var.agent_domain_name}-${count.index + 1}-longhorn.qcow2"
-  pool  = var.longhorn_data_volume_pool
-  count = var.agent_vm_count
-  size  = 64424509440
 }
 
 resource "libvirt_cloudinit_disk" "agent_cloud_init" {

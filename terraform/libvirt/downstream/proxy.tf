@@ -9,7 +9,7 @@ resource "libvirt_domain" "proxy" {
     xslt = file("cdrom-model.xsl")
   }
   autostart = true
-  vcpu      = 1
+  vcpu      = 2
   memory    = 512
   disk {
     volume_id = element(libvirt_volume.proxy_root_disk.*.id, count.index)
@@ -28,20 +28,6 @@ resource "libvirt_domain" "proxy" {
   provisioner "local-exec" {
     command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '192.168.1.2${count.index + 1},' --private-key ${var.ssh_private_key} proxy_setup.yaml"
   }
-}
-
-resource "libvirt_volume" "proxy_root_disk" {
-  name   = "${var.proxy_domain_name}-${count.index + 1}-root.qcow2"
-  pool   = var.root_volume_pool
-  source = var.base_root_volume_path
-  count  = var.proxy_vm_count
-}
-
-resource "libvirt_volume" "proxy_swap_disk" {
-  name  = "${var.proxy_domain_name}-${count.index + 1}-swap.qcow2"
-  pool  = var.swap_volume_pool
-  size  = 536870912
-  count = var.proxy_vm_count
 }
 
 resource "libvirt_cloudinit_disk" "proxy_cloud_init" {
