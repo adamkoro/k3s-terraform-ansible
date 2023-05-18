@@ -8,14 +8,14 @@
     - package_install
 
 - name: Enable and start iscsid
-  ansilbe.buildtin.systemd:
+  ansible.builtin.systemd:
     name: iscsid
     daemon_reload: true
     state: restarted
     enabled: true
 
 - name: Copy K3s service file
-  ansilbe.buildtin.template:
+  ansible.builtin.template:
     src: "k3s.service.j2"
     dest: "/etc/systemd/system/k3s-worker.service"
     owner: root
@@ -25,7 +25,7 @@
     - cluster_update
 
 - name: Enable and check K3s service
-  ansilbe.buildtin.systemd:
+  ansible.builtin.systemd:
     name: k3s-worker
     daemon_reload: true
     state: restarted

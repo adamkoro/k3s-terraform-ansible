@@ -1,19 +1,19 @@
 ---
 - name: Kill k3s-init temporary service which is used for initialization
-  ansilbe.buildtin.systemd:
+  ansible.builtin.systemd:
     name: k3s-init
     state: stopped
   failed_when: false
 
 - name: Copy manifests to the first node
-  ansilbe.buildtin.include_tasks: manifests.yml
+  ansible.builtin.include_tasks: manifests.yml
   when: inventory_hostname == groups['control_plane'][0]
   tags:
     - manifests
     - cluster_update
 
 - name: Copy K3s service file
-  ansilbe.buildtin.register: k3s_service
+  ansible.builtin.register: k3s_service
   template:
     src: "k3s.service.j2"
     dest: "/etc/systemd/system/k3s.service"
@@ -24,7 +24,7 @@
     - cluster_update
 
 - name: Enable and check K3s service
-  ansilbe.buildtin.systemd:
+  ansible.builtin.systemd:
     name: k3s
     daemon_reload: true
     state: restarted
@@ -34,14 +34,14 @@
     - update_k3s
 
 - name: Create directory .kube
-  ansilbe.buildtin.file:
+  ansible.builtin.file:
     path: ~{{ ansible_user }}/.kube
     state: directory
     owner: "{{ ansible_user }}"
     mode: "u=rwx,g=rx,o="
 
 - name: Copy config file to user home directory
-  ansilbe.buildtin.copy:
+  ansible.builtin.copy:
     src: /etc/rancher/k3s/k3s.yaml
     dest: ~{{ ansible_user }}/.kube/config
     remote_src: true
@@ -49,17 +49,18 @@
     mode: "u=rw,g=,o="
 
 - name: Delete default configs from kube config
-  ansilbe.buildtin.command: '{{ item }}'
+  ansible.builtin.command: '{{ item }}'
   with_items:
     - k3s kubectl config delete-cluster default --kubeconfig ~{{ ansible_user }}/.kube/config
     - k3s kubectl config delete-context default --kubeconfig ~{{ ansible_user }}/.kube/config
     - k3s kubectl config delete-user default --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
+  changed_when: false
   tags:
     config_update
 
 - name: Read server cert from master
-  ansilbe.buildtin.slurp:
+  ansible.builtin.slurp:
     path: "/var/lib/rancher/k3s/server/tls/server-ca.crt"
   register: server_cert
   tags:
@@ -67,7 +68,7 @@
   when: inventory_hostname == groups['control_plane'][0]
 
 - name: Read admin client cert from master
-  ansilbe.buildtin.slurp:
+  ansible.builtin.slurp:
     path: "/var/lib/rancher/k3s/server/tls/client-admin.crt"
   register: client_admin_cert
   when: inventory_hostname == groups['control_plane'][0]
@@ -75,7 +76,7 @@
     config_update
 
 - name: Read admin client cert from master
-  ansilbe.buildtin.slurp:
+  ansible.builtin.slurp:
     path: "/var/lib/rancher/k3s/server/tls/client-admin.key"
   register: client_admin_key
   when: inventory_hostname == groups['control_plane'][0]
@@ -83,7 +84,7 @@
     config_update
 
 - name: Configure kube config for {{ cluster_name }}
-  ansilbe.buildtin.command: "{{ item }}"
+  ansible.builtin.command: "{{ item }}"
   with_items:
     - k3s kubectl config set-cluster {{ kconfig_cluster_name }} --server=https://{{ cluster_endpoint }}:6443 --kubeconfig ~{{ ansible_user }}/.kube/config
     - k3s kubectl config set clusters.{{ kconfig_cluster_name }}.certificate-authority-data {{ server_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
@@ -93,23 +94,24 @@
     - k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-key-data {{ client_admin_key.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
     - k3s kubectl config use-context {{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
+  changed_when: false
   tags:
     config_update
 
 - name: Create kubectl symlink
-  ansilbe.buildtin.file:
+  ansible.builtin.file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/kubectl
     state: link
 
 - name: Create crictl symlink
-  ansilbe.buildtin.file:
+  ansible.builtin.file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/crictl
     state: link
 
 - name: Copy kubeconfig from first remote master
-  ansilbe.buildtin.fetch:
+  ansible.builtin.fetch:
     src: "~{{ ansible_user }}/.kube/config"
     dest: "~/.kube/config.{{ kconfig_cluster_name }}"
     flat: true

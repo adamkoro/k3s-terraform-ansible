@@ -10,33 +10,38 @@
     - crmsh
 
 - name: Generate corosync authkey
-  ansilbe.buildtin.shell: corosync-keygen
+  ansible.builtin.command: corosync-keygen
+  when: inventory_hostname == groups['loadbalancer'][0]
+  changed_when: true
 
 - name: Read corosync authkey
-  ansilbe.buildtin.slurp:
+  ansible.builtin.slurp:
     src: "/etc/corosync/authkey"
   register: corosync_authkey
   when: inventory_hostname == groups['loadbalancer'][0]
 
 - name: Store etcd node-token
-  ansilbe.buildtin.set_fact:
+  ansible.builtin.set_fact:
     token: "{{ corosync_authkey.content | b64decode }}"
   when: inventory_hostname == groups['loadbalancer'][0]
 
 - name: Synchronizing authkey to other nodes
-  ansilbe.buildtin.copy:
+  ansible.builtin.copy:
     content: "{{ hostvars[groups['loadbalancer'][0]]['token'] }}"
     dest: /etc/corosync/authkey
     mode: "0400"
   when: inventory_hostname != groups['loadbalancer'][0]
 
 - name: Create corosync log file
-  ansilbe.buildtin.file:
+  ansible.builtin.file:
     path: "/var/log/corosync.log"
     state: touch
+    owner: root
+    group: root
+    mode: "0644"
 
 - name: Copy nginx loadbalancer config
-  ansilbe.buildtin.template:
+  ansible.builtin.template:
     src: "nginx.conf.j2"
     dest: "/etc/nginx/nginx.conf"
     owner: root
@@ -44,7 +49,7 @@
     mode: "0644"
 
 - name: Copy corosync config
-  ansilbe.buildtin.template:
+  ansible.builtin.template:
     src: "corosync.conf.j2"
     dest: "/etc/corosync/corosync.conf"
     owner: root
@@ -52,7 +57,7 @@
     mode: "0644"
 
 - name: Enable and check nginx,corosync and pacemaker service
-  ansilbe.buildtin.systemd:
+  ansible.builtin.systemd:
     name: "{{ item }}"
     daemon_reload: true
     state: restarted
@@ -63,28 +68,32 @@
     - pacemaker
 
 - name: Disable stonith device
-  ansilbe.buildtin.shell: crm configure property stonith-enabled=false
+  ansible.builtin.command: crm configure property stonith-enabled=false
   when: inventory_hostname == groups['loadbalancer'][0]
+  changed_when: true
 
 - name: Remove quorum policy
-  ansilbe.buildtin.shell: crm configure property no-quorum-policy=ignore
+  ansible.builtin.command: crm configure property no-quorum-policy=ignore
   when: inventory_hostname == groups['loadbalancer'][0]
-
+  changed_when: true
 
 - name: Setup virtual ip for cluster
-  ansilbe.buildtin.shell: crm configure primitive virtual_ip ocf:heartbeat:IPaddr2 params ip="{{ cluster_endpoint }}" cidr_netmask="32" op monitor interval="10s" meta migration-threshold="10"
+  ansible.builtin.command: crm configure primitive virtual_ip ocf:heartbeat:IPaddr2 params ip="{{ cluster_endpoint }}" cidr_netmask="32" op monitor interval="10s" meta migration-threshold="10"
   when: inventory_hostname == groups['loadbalancer'][0]
+  changed_when: true
 
 - name: Setup nginx HA
-  ansilbe.buildtin.shell: crm configure primitive k3s_api ocf:heartbeat:nginx configfile=/etc/nginx/nginx.conf op start timeout="40s" interval="0" op stop timeout="60s" interval="0" op monitor interval="10s" timeout="60s" meta migration-threshold="10"
+  ansible.builtin.command: crm configure primitive k3s_api ocf:heartbeat:nginx configfile=/etc/nginx/nginx.conf op start timeout="40s" interval="0" op stop timeout="60s" interval="0" op monitor interval="10s" timeout="60s" meta migration-threshold="10"
   when: inventory_hostname == groups['loadbalancer'][0]
+  changed_when: true
 
 - name: Create group for created resources
-  ansilbe.buildtin.shell: crm configure group k3s_lb virtual_ip k3s_api
+  ansible.builtin.command: crm configure group k3s_lb virtual_ip k3s_api
   when: inventory_hostname == groups['loadbalancer'][0]
+  changed_when: true
 
 - name: Wait for ectd nodes loadbalancer port
-  ansilbe.buildtin.wait_for:
+  ansible.builtin.wait_for:
     host: "{{ cluster_endpoint }}"
     port: 6444
     delay: 10
@@ -92,7 +101,7 @@
     timeout: 30
 
 - name: Wait for master nodes loadbalancer port
-  ansilbe.buildtin.wait_for:
+  ansible.builtin.wait_for:
     host: "{{ cluster_endpoint }}"
     port: 6443
     delay: 10

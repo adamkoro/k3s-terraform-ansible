@@ -1,13 +1,13 @@
 ---
 - name: Kill k3s-init temporary service which is used for initialization
-  ansilbe.buildtin.systemd:
+  ansible.builtin.systemd:
     name: k3s-init
     state: stopped
   failed_when: false
 
 - name: Copy K3s service file
   register: k3s_service
-  ansilbe.buildtin.template:
+  ansible.builtin.template:
     src: "k3s.service.j2"
     dest: "/etc/systemd/system/k3s.service"
     owner: root
@@ -15,7 +15,7 @@
     mode: "0644"
 
 - name: Enable and check K3s service
-  ansilbe.buildtin.systemd:
+  ansible.builtin.systemd:
     name: k3s
     daemon_reload: true
     state: restarted
