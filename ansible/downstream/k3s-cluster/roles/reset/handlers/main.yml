@@ -1,0 +1,10 @@
+---
+- name: Reboot
+  reboot:
+    reboot_timeout: 300
+    msg: "Reboot initiated by Ansible for {{ inventory_hostname }}"
+  async: 0
+  poll: 0
+  ignore_errors: true
+  register: reboot
+  tags: reboot

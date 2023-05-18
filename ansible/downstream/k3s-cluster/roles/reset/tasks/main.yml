@@ -51,3 +51,4 @@
     daemon_reload: yes
   tags:
   - remove_all
+  notify: Reboot
