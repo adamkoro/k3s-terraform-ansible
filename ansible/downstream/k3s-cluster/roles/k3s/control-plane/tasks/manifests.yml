@@ -6,6 +6,8 @@
     owner: root
     group: root
     mode: "0644"
+  tags:
+    - manifests
 
 - name: Copy metallb manifest to first master
   ansible.builtin.template:
@@ -14,6 +16,8 @@
     owner: root
     group: root
     mode: "0644"
+  tags:
+    - manifests
 
 - name: Copy cert-manager manifest to first master
   ansible.builtin.template:
@@ -22,6 +26,8 @@
     owner: root
     group: root
     mode: "0644"
+  tags:
+    - manifests
 
 - name: Copy cert-manager issuer manifest to first master
   ansible.builtin.template:
@@ -30,6 +36,8 @@
     owner: root
     group: root
     mode: "0644"
+  tags:
+    - manifests
 
 - name: Copy longhorn manifest to first master
   ansible.builtin.template:
@@ -38,6 +46,8 @@
     owner: root
     group: root
     mode: "0644"
+  tags:
+    - manifests
 
 - name: Copy ingress-nginx manifest to first master
   ansible.builtin.template:
@@ -46,3 +56,5 @@
     owner: root
     group: root
     mode: "0644"
+  tags:
+    - manifests
