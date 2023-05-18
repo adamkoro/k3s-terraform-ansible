@@ -2,18 +2,28 @@
   hosts: all
   remote_user: adamkoro
   become: true
+  vars:
+    filesystem_type: xfs
+    swap_disk: /dev/vdb
   tasks:
     ###############
     ## swap disk
     ###############
+    - name: Check if swap disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value "{{ swap_disk }}"
+      register: fs_swap
+      changed_when: false
+      failed_when: false
+
     - name: Create a filesystem for swap
       community.general.filesystem:
-        dev: /dev/vdb
+        dev: "{{ swap_disk }}"
         fstype: swap
         force: true
+      when: fs_swap.rc != 0 or fs_swap.stdout != "swap"
 
     - name: Get swap disk UUID
-      ansible.builtin.command: blkid -s UUID -o value /dev/vdb
+      ansible.builtin.command: blkid -s UUID -o value {{ swap_disk }}
       register: uuid_swap
       changed_when: false
 
@@ -21,7 +31,7 @@
     ## mount created disks
     ###############
     - name: Add disks to fstab
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /etc/fstab
         state: present
         block: |
@@ -30,3 +40,26 @@
     - name: Enable swap
       ansible.builtin.command: swapon -a
       changed_when: false
+
+    - name: Mount disks
+      ansible.builtin.command: mount -a
+      changed_when: false
+
+    - name: Remove the wrong kernel-default-base package
+      community.general.zypper:
+        name: kernel-default-base
+        state: absent
+
+    - name: Install kernel-default package
+      community.general.zypper:
+        name: kernel-default
+        state: present
+      notify:
+        - Reboot
+
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+        msg: "Reboot initiated by Ansible for kernel update"
+      listen: Reboot

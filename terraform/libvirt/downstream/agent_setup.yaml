@@ -2,46 +2,97 @@
   hosts: all
   remote_user: adamkoro
   become: true
+  vars:
+    filesystem_type: xfs
+    swap_disk: /dev/vdb
+    kubelet_disk: /dev/vdc
+    kubelet_mount: /var/lib/kubelet
+    rancher_disk: /dev/vdd
+    rancher_mount: /var/lib/rancher
+    longhorn_disk: /dev/vde
+    longhorn_mount: /var/lib/longhorn
   tasks:
+    ###############
+    ## swap disk
+    ###############
+    - name: Check if swap disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value "{{ swap_disk }}"
+      register: fs_swap
+      changed_when: false
+      failed_when: false
+
+    - name: Create a filesystem for swap
+      community.general.filesystem:
+        dev: "{{ swap_disk }}"
+        fstype: swap
+        force: true
+      when: fs_swap.rc != 0 or fs_swap.stdout != "swap"
+
+    - name: Get swap disk UUID
+      ansible.builtin.command: blkid -s UUID -o value {{ swap_disk }}
+      register: uuid_swap
+      changed_when: false
+
     ###############
     ## kubelet disk
     ###############
-    - name: Create a filesystem for kubelet
+    - name: Check if kubelet disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value {{ kubelet_disk }}
+      register: fs_kubelet
+      changed_when: false
+      failed_when: false
+
+    - name: Format kubelet disk
       community.general.filesystem:
-        dev: /dev/vdb
-        fstype: xfs
+        dev: "{{ kubelet_disk }}"
+        fstype: "{{ filesystem_type }}"
         force: true
+      when: fs_kubelet.rc != 0 or fs_kubelet.stdout != filesystem_type
 
     - name: Get kubelet disk UUID
-      ansible.builtin.command: blkid -s UUID -o value /dev/vdb
+      ansible.builtin.command: blkid -s UUID -o value {{ kubelet_disk }}
       register: uuid_kubelet
       changed_when: false
 
     ###############
     ## rancher disk
     ###############
+    - name: Check if kubelet disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value {{ rancher_disk }}
+      register: fs_rancher
+      changed_when: false
+      failed_when: false
+
     - name: Create a filesystem for rancher
       community.general.filesystem:
-        dev: /dev/vdc
-        fstype: xfs
+        dev: "{{ rancher_disk }}"
+        fstype: "{{ filesystem_type }}"
         force: true
+      when: fs_rancher.rc != 0 or fs_rancher.stdout != filesystem_type
 
     - name: Get rancher disk UUID
-      ansible.builtin.command: blkid -s UUID -o value /dev/vdc
+      ansible.builtin.command: blkid -s UUID -o value {{ rancher_disk }}
       register: uuid_rancher
       changed_when: false
 
     ###############
     ## longhorn disk
     ###############
+    - name: Check if kubelet disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value {{ longhorn_disk }}
+      register: fs_longhorn
+      changed_when: false
+      failed_when: false
+
     - name: Create a filesystem for longhorn
       community.general.filesystem:
-        dev: /dev/vdd
-        fstype: xfs
+        dev: "{{ longhorn_disk }}"
+        fstype: "{{ filesystem_type }}"
         force: true
+      when: fs_longhorn.rc != 0 or fs_longhorn.stdout != filesystem_type
 
     - name: Get longhorn disk UUID
-      ansible.builtin.command: blkid -s UUID -o value /dev/vdd
+      ansible.builtin.command: blkid -s UUID -o value {{ longhorn_disk }}
       register: uuid_longhorn
       changed_when: false
 
@@ -49,13 +100,14 @@
     ## mount created disks
     ###############
     - name: Add disks to fstab
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /etc/fstab
         state: present
         block: |
-          UUID={{ uuid_kubelet.stdout }} /var/lib/kubelet xfs defaults 0 0
-          UUID={{ uuid_rancher.stdout }} /var/lib/rancher xfs defaults 0 0
-          UUID={{ uuid_longhorn.stdout }} /var/lib/longhorn xfs defaults 0 0
+          #UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
+          UUID={{ uuid_kubelet.stdout }} {{ kubelet_mount }} {{ filesystem_type }} defaults 0 0
+          UUID={{ uuid_rancher.stdout }} {{ rancher_mount }} {{ filesystem_type }} defaults 0 0
+          UUID={{ uuid_longhorn.stdout }} {{ longhorn_mount }} {{ filesystem_type }} defaults 0 0
 
     - name: Create directory for mounts
       ansible.builtin.file:
@@ -63,25 +115,31 @@
         state: directory
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
       loop:
-        - "/var/lib/kubelet"
-        - "/var/lib/rancher"
-        - "/var/lib/longhorn"
+        - "{{ kubelet_mount }}"
+        - "{{ rancher_mount }}"
+        - "{{ longhorn_mount }}"
 
     - name: Mount disks
       ansible.builtin.command: mount -a
       changed_when: false
 
-    - name: Remove old kernel
+    - name: Remove the wrong kernel-default-base package
       community.general.zypper:
         name: kernel-default-base
         state: absent
 
-    - name: Install packages
+    - name: Install kernel-default package
       community.general.zypper:
-        name: "{{ item }}"
+        name: kernel-default
         state: present
-      loop:
-        - "nfs-client"
-        - "kernel-default"
+      notify:
+        - Reboot
+
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+        msg: "Reboot initiated by Ansible for kernel update"
+      listen: Reboot

@@ -1,57 +1,99 @@
 - name: Etcd node setup
   hosts: all
   remote_user: adamkoro
-  become: yes
+  become: true
+  vars:
+    filesystem_type: xfs
+    swap_disk: /dev/vdb
+    rancher_disk: /dev/vdc
+    rancher_mount: /var/lib/rancher
   tasks:
     ###############
     ## swap disk
     ###############
+    - name: Check if swap disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value "{{ swap_disk }}"
+      register: fs_swap
+      changed_when: false
+      failed_when: false
+
     - name: Create a filesystem for swap
-      filesystem:
-        dev: /dev/vdb
+      community.general.filesystem:
+        dev: "{{ swap_disk }}"
         fstype: swap
-        force: yes
+        force: true
+      when: fs_swap.rc != 0 or fs_swap.stdout != "swap"
 
     - name: Get swap disk UUID
-      command: blkid -s UUID -o value /dev/vdb
+      ansible.builtin.command: blkid -s UUID -o value {{ swap_disk }}
       register: uuid_swap
+      changed_when: false
 
     ###############
-    ## etcd disk
+    ## rancher disk
     ###############
-    - name: Create a filesystem for etcd
-      filesystem:
-        dev: /dev/vdc
-        fstype: xfs
-        force: yes
+    - name: Check if kubelet disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value {{ rancher_disk }}
+      register: fs_rancher
+      changed_when: false
+      failed_when: false
 
-    - name: Get etcd disk UUID
-      command: blkid -s UUID -o value /dev/vdc
-      register: uuid_ectd
+    - name: Create a filesystem for rancher
+      community.general.filesystem:
+        dev: "{{ rancher_disk }}"
+        fstype: "{{ filesystem_type }}"
+        force: true
+      when: fs_rancher.rc != 0 or fs_rancher.stdout != filesystem_type
+
+    - name: Get rancher disk UUID
+      ansible.builtin.command: blkid -s UUID -o value {{ rancher_disk }}
+      register: uuid_rancher
+      changed_when: false
 
     ###############
     ## mount created disks
     ###############
     - name: Add disks to fstab
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /etc/fstab
         state: present
         block: |
           UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
-          UUID={{ uuid_ectd.stdout }} /var/lib/rancher xfs defaults 0 0
+          UUID={{ uuid_rancher.stdout }} {{ rancher_mount }} {{ filesystem_type }} defaults 0 0
 
     - name: Create directory for mounts
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: directory
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
       loop:
-        - "/var/lib/rancher"
+        - "{{ rancher_mount }}"
 
     - name: Enable swap
-      command: swapon -a
+      ansible.builtin.command: swapon -a
+      changed_when: false
 
     - name: Mount disks
-      command: mount -a
+      ansible.builtin.command: mount -a
+      changed_when: false
+
+    - name: Remove the wrong kernel-default-base package
+      community.general.zypper:
+        name: kernel-default-base
+        state: absent
+
+    - name: Install kernel-default package
+      community.general.zypper:
+        name: kernel-default
+        state: present
+      notify:
+        - Reboot
+
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+        msg: "Reboot initiated by Ansible for kernel update"
+      listen: Reboot
