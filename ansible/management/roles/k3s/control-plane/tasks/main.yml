@@ -1,18 +1,3 @@
-- name: Install open-iscsi for Longhorn
-  zypper:
-    name: open-iscsi
-    state: present
-    disable_recommends: no
-  tags:
-    - package_install
-
-- name: Enable and start iscsid
-  systemd:
-    name: iscsid
-    daemon_reload: yes
-    state: restarted
-    enabled: yes
-
 - name: Kill k3s-init temporary service which is used for initialization
   systemd:
     name: k3s-init
@@ -69,8 +54,6 @@
     - k3s kubectl config delete-context default --kubeconfig ~{{ ansible_user }}/.kube/config
     - k3s kubectl config delete-user default --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
-  tags:
-    config_update
 
 - name: Read server cert from master
   slurp:
@@ -107,8 +90,6 @@
     - k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-key-data {{ client_admin_key.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
     - k3s kubectl config use-context {{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
-  tags:
-    config_update
 
 - name: Create kubectl symlink
   file:
@@ -131,3 +112,9 @@
   tags:
     - config_update
     - get_config
+
+- name: Install kubectl bash completion
+  command: 'kubectl completion bash > /etc/bash_completion.d/kubectl'
+  when: inventory_hostname == groups['control_plane'][0]
+  tags:
+    - config_update

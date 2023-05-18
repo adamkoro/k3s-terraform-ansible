@@ -1,34 +1,35 @@
+---
 - name: Install open-iscsi for Longhorn
-  zypper:
+  community.general.zypper:
     name: open-iscsi
     state: present
-    disable_recommends: no
+    disable_recommends: false
   tags:
     - package_install
 
 - name: Enable and start iscsid
-  systemd:
+  ansilbe.buildtin.systemd:
     name: iscsid
-    daemon_reload: yes
+    daemon_reload: true
     state: restarted
-    enabled: yes
+    enabled: true
 
 - name: Copy K3s service file
-  template:
+  ansilbe.buildtin.template:
     src: "k3s.service.j2"
     dest: "/etc/systemd/system/k3s-worker.service"
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
   tags:
     - cluster_update
 
 - name: Enable and check K3s service
-  systemd:
+  ansilbe.buildtin.systemd:
     name: k3s-worker
-    daemon_reload: yes
+    daemon_reload: true
     state: restarted
-    enabled: yes
+    enabled: true
   tags:
     - cluster_update
     - update_k3s

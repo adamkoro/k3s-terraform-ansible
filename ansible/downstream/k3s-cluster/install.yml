@@ -1,31 +1,31 @@
 - hosts: k3s_cluster
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   roles:
     - role: download
 
 - hosts: loadbalancer
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   roles:
     - role: loadbalancer
 
 - hosts: k3s_cluster_init
-  become: yes
+  become: true
   roles:
     - role: k3s/cluster-init
 
 - hosts: etcd
-  become: yes
+  become: true
   roles:
     - role: k3s/etcd
 
 - hosts: control_plane
-  become: yes
+  become: true
   roles:
     - role: k3s/control-plane
 
 - hosts: agent
-  become: yes
+  become: true
   roles:
     - role: k3s/agent

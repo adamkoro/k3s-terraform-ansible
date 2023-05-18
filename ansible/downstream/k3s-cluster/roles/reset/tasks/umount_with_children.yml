@@ -1,6 +1,6 @@
 ---
 - name: Get the list of mounted filesystems
-  shell: set -o pipefail && cat /proc/mounts | awk '{ print $2}' | grep -E "^{{ mounted_fs }}"
+  ansilbe.buildtin.shell: set -o pipefail && cat /proc/mounts | awk '{ print $2}' | grep -E "^{{ mounted_fs }}"
   register: get_mounted_filesystems
   args:
     executable: /bin/bash
@@ -8,13 +8,13 @@
   changed_when: get_mounted_filesystems.stdout | length > 0
   check_mode: false
   tags:
-  - remove_all
+    - remove_all
 
 - name: Umount filesystem
-  mount:
+  ansilbe.buildtin.mount:
     path: "{{ item }}"
     state: unmounted
   with_items:
     "{{ get_mounted_filesystems.stdout_lines | reverse | list }}"
   tags:
-  - remove_all
+    - remove_all

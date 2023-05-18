@@ -1,26 +1,26 @@
 ---
 - name: Disable services
-  systemd:
+  ansilbe.buildtin.systemd:
     name: "{{ item }}"
     state: stopped
-    enabled: no
+    enabled: false
   failed_when: false
   with_items:
     - k3s
   tags:
-  - remove_all
+    - remove_all
 
 - name: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
   register: pkill_containerd_shim_runc
-  command: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
+  ansilbe.buildtin.command: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
   changed_when: "pkill_containerd_shim_runc.rc == 0"
   failed_when: false
   tags:
-  - remove_all
+    - remove_all
 
 
 - name: Umount k3s filesystems
-  include_tasks: umount_with_children.yml
+  ansilbe.buildtin.include_tasks: umount_with_children.yml
   with_items:
     - /run/k3s
     - /var/lib/kubelet
@@ -29,10 +29,10 @@
   loop_control:
     loop_var: mounted_fs
   tags:
-  - remove_all
+    - remove_all
 
 - name: Remove service files, binaries and data
-  file:
+  ansilbe.buildtin.file:
     name: "{{ item }}"
     state: absent
   with_items:
@@ -44,11 +44,11 @@
     - /var/lib/rancher/k3s
     - /var/lib/longhorn/*
   tags:
-  - remove_all
+    - remove_all
 
-- name: daemon_reload
-  systemd:
-    daemon_reload: yes
+- name: Daemon_reload
+  ansilbe.buildtin.systemd:
+    daemon_reload: true
   tags:
-  - remove_all
+    - remove_all
   notify: Reboot

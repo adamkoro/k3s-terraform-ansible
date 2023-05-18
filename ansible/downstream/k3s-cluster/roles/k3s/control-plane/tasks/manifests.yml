@@ -1,69 +1,48 @@
+---
 - name: Create manifests directory on first master
-  file:
+  ansilbe.buildtin.file:
     path: /var/lib/rancher/k3s/server/manifests
     state: directory
     owner: root
     group: root
-    mode: 0644
-
-#- name: Copy vip to first master
-#  template:
-#    src: "vip.yaml.j2"
-#    dest: "/var/lib/rancher/k3s/server/manifests/vip.yaml"
-#    owner: root
-#    group: root
-#    mode: 0644
-#  when: 
-#  tags:
-#    - manifests
+    mode: "0644"
 
 - name: Copy metallb manifest to first master
-  template:
+  ansilbe.buildtin.template:
     src: "metallb.yaml.j2"
     dest: "/var/lib/rancher/k3s/server/manifests/metallb.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 - name: Copy cert-manager manifest to first master
-  template:
+  ansilbe.buildtin.template:
     src: "cert-manager.yaml.j2"
     dest: "/var/lib/rancher/k3s/server/manifests/cert-manager.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 - name: Copy cert-manager issuer manifest to first master
-  template:
+  ansilbe.buildtin.template:
     src: "cert-manager-issuer.yaml.j2"
     dest: "/var/lib/rancher/k3s/server/manifests/cert-manager-issuer.yaml"
     owner: root
     group: root
-    mode: 0644
-    
+    mode: "0644"
+
 - name: Copy longhorn manifest to first master
-  template:
+  ansilbe.buildtin.template:
     src: "longhorn.yaml.j2"
     dest: "/var/lib/rancher/k3s/server/manifests/longhorn.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 - name: Copy ingress-nginx manifest to first master
-  template:
+  ansilbe.buildtin.template:
     src: "ingress-nginx.yaml.j2"
     dest: "/var/lib/rancher/k3s/server/manifests/ingress-nginx.yaml"
     owner: root
     group: root
-    mode: 0644
-#
-#- name: Copy nfs-client-provisioner manifest to first master
-#  template:
-#    src: "nfs-client-provisioner.yaml.j2"
-#    dest: "/var/lib/rancher/k3s/server/manifests/nfs-client-provisioner.yaml"
-#    owner: root
-#    group: root
-#    mode: 0644
-#  when: 
-#  tags:
-#    - manifests
+    mode: "0644"
