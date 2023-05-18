@@ -13,8 +13,8 @@
     - cluster_update
 
 - name: Copy K3s service file
-  ansible.builtin.register: k3s_service
-  template:
+  register: k3s_service
+  ansible.builtin.template:
     src: "k3s.service.j2"
     dest: "/etc/systemd/system/k3s.service"
     owner: root
