@@ -1,4 +1,9 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: longhorn-system
+---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
@@ -24,8 +29,3 @@ spec:
                 cert-manager.io/cluster-issuer: "home-local"
             tls: true
             tlsSecret: longhorn-cert
-        longhornUI.replicas: 1
-        longhornRecoveryBackend.replicas: 1
-        longhornAdmissionWebhook.replicas: 1
-        longhornUI.replicas: 1
-        
