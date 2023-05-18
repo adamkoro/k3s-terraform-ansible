@@ -119,3 +119,7 @@
   handlers:
     - name: Reboot
       ansible.builtin.reboot:
+        reboot_timeout: 300
+        msg: "Reboot initiated by Ansible for kernel update"
+      listen: Reboot
+
