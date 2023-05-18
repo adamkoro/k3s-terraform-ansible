@@ -6,7 +6,7 @@ resource "libvirt_domain" "control-plane" {
   }
   autostart = true
   vcpu      = 4
-  memory    = 6144
+  memory    = 4096
   machine   = "q35"
   xml {
     xslt = file("cdrom-model.xsl")
@@ -22,9 +22,6 @@ resource "libvirt_domain" "control-plane" {
   }
   disk {
     volume_id = element(libvirt_volume.control-plane_rancher_data_disk.*.id, count.index)
-  }
-  disk {
-    volume_id = element(libvirt_volume.control-plane_longhorn_data_disk.*.id, count.index)
   }
   network_interface {
     bridge = "br0"
