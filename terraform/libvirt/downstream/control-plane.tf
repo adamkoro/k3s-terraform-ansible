@@ -6,7 +6,7 @@ resource "libvirt_domain" "control-plane" {
   }
   autostart = true
   vcpu      = 4
-  memory    = 3072
+  memory    = 2048
   machine   = "q35"
   xml {
     xslt = file("cdrom-model.xsl")
