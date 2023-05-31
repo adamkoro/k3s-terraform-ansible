@@ -21,3 +21,11 @@ spec:
             backupTarget: "{{ longhorn_backup_path }}"
             defaultReplicaCount: {{ longhorn_replica_number }}
             createDefaultDiskLabeledNodes: {{ longhorn_disk_on_labeled_node }}
+        ingress:
+            enabled: {{ longhorn_ingress_enabled }}
+            host: "{{ longhorn_hostname }}"
+            annotations:
+                kubernetes.io/ingress.class: "nginx"
+                cert-manager.io/cluster-issuer: "home-local"
+            tls: true
+            tlsSecret: longhorn-cert
