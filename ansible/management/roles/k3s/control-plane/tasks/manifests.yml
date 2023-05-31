@@ -67,3 +67,13 @@
     mode: 0644
   tags:
     - manifests
+
+- name: Copy longhorn manifest to first master
+  template:
+    src: "longhorn.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/longhorn.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
