@@ -52,6 +52,10 @@ variable "rancher_data_volume_pool" {
   type = string
 }
 
+variable "longhorn_data_volume_pool" {
+  type = string
+}
+
 
 variable "vm_ip_range" {
   type = string

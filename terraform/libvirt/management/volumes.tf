@@ -25,3 +25,10 @@ resource "libvirt_volume" "control-plane_rancher_data_disk" {
   count = var.control-plane_vm_count
   size  = 21474836480
 }
+
+resource "libvirt_volume" "control-plane_longhorn_data_disk" {
+  name  = "${var.control-plane_domain_name}-${count.index + 1}-longhorn.qcow2"
+  pool  = var.longhorn_data_volume_pool
+  count = var.control-plane_vm_count
+  size  = 53687091200
+}
