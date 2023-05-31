@@ -11,6 +11,29 @@
     - manifests
     - cluster_update
 
+- name: Install open-iscsi for Longhorn
+  community.general.zypper:
+    name: open-iscsi
+    state: present
+    disable_recommends: false
+  tags:
+    - package_install
+
+- name: Install nfs-client
+  community.general.zypper:
+    name: nfs-client
+    state: present
+    disable_recommends: false
+  tags:
+    - package_install
+
+- name: Enable and start iscsid
+  ansible.builtin.systemd:
+    name: iscsid
+    daemon_reload: true
+    state: restarted
+    enabled: true
+
 - name: Copy K3s service file
   register: k3s_service
   template:
