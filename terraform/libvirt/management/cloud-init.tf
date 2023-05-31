@@ -3,7 +3,7 @@ resource "libvirt_cloudinit_disk" "control-plane_cloud_init" {
   name           = "${var.control-plane_domain_name}${count.index + 1}-cloud-init.iso"
   count          = var.control-plane_vm_count
   user_data      = <<EOF
-  #cloud-config
+#cloud-config
 hostname: ${var.control-plane_domain_name}-${count.index + 1}
 fqdn: ${var.control-plane_domain_name}-${count.index + 1}.adamkoro.local
 manage_etc_hosts: true
@@ -22,6 +22,7 @@ chpasswd:
   list: |
     ${var.cloud_init_username}:${var.cloud_init_password}
   expire: False
+timezone: Europe/Budapest
 write_files:
   - path: /etc/sysctl.d/99-swappiness.conf
     content: |
