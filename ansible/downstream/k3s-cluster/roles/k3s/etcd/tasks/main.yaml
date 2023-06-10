@@ -13,6 +13,8 @@
     owner: root
     group: root
     mode: "0644"
+  tags: 
+    - etcd-recover
 
 - name: Enable and check K3s service
   ansible.builtin.systemd:
@@ -22,3 +24,4 @@
     enabled: true
   tags:
     - update_k3s
+    - etcd-recover

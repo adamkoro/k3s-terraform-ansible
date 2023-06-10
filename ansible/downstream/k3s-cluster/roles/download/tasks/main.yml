@@ -10,3 +10,4 @@
   when: ansible_facts.architecture == "x86_64"
   tags:
     - update_k3s
+    - etcd-recover
