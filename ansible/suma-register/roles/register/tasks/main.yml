@@ -1,0 +1,20 @@
+# Download script from url
+- name: Download script from url
+  ansible.builtin.get_url:
+    url: "{{ suma_script_url }}"
+    dest: "{{ script_path }}"
+    mode: "0750"
+  register: suma_register_script_download
+  until: suma_register_script_download is succeeded
+  retries: 3
+  delay: 2
+  tags:
+    - register
+
+# Run script
+- name: Run script
+  ansible.builtin.command: "{{ script_path }}"
+  register: suma_register_script
+  until: suma_register_script.rc == 0
+  tags:
+    - register

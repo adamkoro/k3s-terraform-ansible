@@ -1,0 +1,6 @@
+- name: Register node to SUMA
+  hosts: all
+  gather_facts: true
+  become: true
+  roles:
+    - register
