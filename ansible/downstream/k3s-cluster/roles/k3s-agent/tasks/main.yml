@@ -6,6 +6,7 @@
     disable_recommends: false
   tags:
     - package_install
+    - restore
 
 - name: Install nfs-client
   community.general.zypper:
@@ -14,6 +15,7 @@
     disable_recommends: false
   tags:
     - package_install
+    - restore
 
 - name: Enable and start iscsid
   ansible.builtin.systemd:
@@ -21,6 +23,8 @@
     daemon_reload: true
     state: restarted
     enabled: true
+  tags:
+    - restore
 
 - name: Copy K3s service file
   ansible.builtin.template:
@@ -31,6 +35,8 @@
     mode: "0755"
   tags:
     - cluster_update
+    - update_k3s
+    - restore
 
 - name: Enable and check K3s service
   ansible.builtin.systemd:
@@ -41,3 +47,4 @@
   tags:
     - cluster_update
     - update_k3s
+    - restore

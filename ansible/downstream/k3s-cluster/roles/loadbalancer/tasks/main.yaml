@@ -8,22 +8,30 @@
     - pacemaker
     - corosync
     - crmsh
+  tags:
+    - restore
 
 - name: Generate corosync authkey
   ansible.builtin.command: corosync-keygen
   when: inventory_hostname == groups['loadbalancer'][0]
   changed_when: true
+  tags: 
+    - restore
 
 - name: Read corosync authkey
   ansible.builtin.slurp:
     src: "/etc/corosync/authkey"
   register: corosync_authkey
   when: inventory_hostname == groups['loadbalancer'][0]
+  tags: 
+    - restore
 
 - name: Store etcd node-token
   ansible.builtin.set_fact:
     token: "{{ corosync_authkey.content | b64decode }}"
   when: inventory_hostname == groups['loadbalancer'][0]
+  tags: 
+    - restore
 
 - name: Synchronizing authkey to other nodes
   ansible.builtin.copy:
@@ -31,6 +39,8 @@
     dest: /etc/corosync/authkey
     mode: "0400"
   when: inventory_hostname != groups['loadbalancer'][0]
+  tags: 
+    - restore
 
 - name: Create corosync log file
   ansible.builtin.file:
@@ -39,6 +49,8 @@
     owner: root
     group: root
     mode: "0644"
+  tags:
+    - restore
 
 - name: Copy nginx loadbalancer config
   ansible.builtin.template:
@@ -47,6 +59,8 @@
     owner: root
     group: root
     mode: "0644"
+  tags:
+    - restore
 
 - name: Copy corosync config
   ansible.builtin.template:
@@ -55,6 +69,8 @@
     owner: root
     group: root
     mode: "0644"
+  tags:
+    - restore
 
 - name: Enable and check nginx,corosync and pacemaker service
   ansible.builtin.systemd:
@@ -66,44 +82,60 @@
     - nginx
     - corosync
     - pacemaker
+  tags:
+    - restore
 
 - name: Disable stonith device
   ansible.builtin.command: crm configure property stonith-enabled=false
   when: inventory_hostname == groups['loadbalancer'][0]
   changed_when: true
+  tags:
+    - restore
 
 - name: Remove quorum policy
   ansible.builtin.command: crm configure property no-quorum-policy=ignore
   when: inventory_hostname == groups['loadbalancer'][0]
   changed_when: true
+  tags:
+    - restore
 
 - name: Setup virtual ip for cluster
   ansible.builtin.command: crm configure primitive virtual_ip ocf:heartbeat:IPaddr2 params ip="{{ cluster_endpoint }}" cidr_netmask="32" op monitor interval="10s" meta migration-threshold="10"
   when: inventory_hostname == groups['loadbalancer'][0]
   changed_when: true
+  tags:
+    - restore
 
 - name: Setup nginx HA
   ansible.builtin.command: crm configure primitive k3s_api ocf:heartbeat:nginx configfile=/etc/nginx/nginx.conf op start timeout="40s" interval="0" op stop timeout="60s" interval="0" op monitor interval="10s" timeout="60s" meta migration-threshold="10"
   when: inventory_hostname == groups['loadbalancer'][0]
   changed_when: true
+  tags:
+    - restore
 
 - name: Create group for created resources
   ansible.builtin.command: crm configure group k3s_lb virtual_ip k3s_api
   when: inventory_hostname == groups['loadbalancer'][0]
   changed_when: true
+  tags:
+    - restore
 
-- name: Wait for ectd nodes loadbalancer port
+- name: Wait for etcd nodes loadbalancer port
   ansible.builtin.wait_for:
     host: "{{ cluster_endpoint }}"
     port: 6444
-    delay: 10
-    connect_timeout: 15
+    delay: 1
+    connect_timeout: 10
     timeout: 30
+  tags:
+    - restore
 
-- name: Wait for master nodes loadbalancer port
+- name: Wait for control-plane nodes loadbalancer port
   ansible.builtin.wait_for:
     host: "{{ cluster_endpoint }}"
     port: 6443
-    delay: 10
-    connect_timeout: 15
+    delay: 1
+    connect_timeout: 10
     timeout: 30
+  tags:
+    - restore

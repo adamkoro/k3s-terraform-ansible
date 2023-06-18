@@ -15,6 +15,7 @@
     mode: "0644"
   tags: 
     - etcd-recover
+    - restore
 
 - name: Enable and check K3s service
   ansible.builtin.systemd:
@@ -25,3 +26,4 @@
   tags:
     - update_k3s
     - etcd-recover
+    - restore

@@ -26,6 +26,7 @@
   when: inventory_hostname == groups['control_plane'][0]
   tags: 
     - cluster_update
+    - restore
 
 - name: Register node-token file access mode
   stat:
@@ -46,6 +47,7 @@
   when: inventory_hostname == groups['control_plane'][0]
   tags: 
     - cluster_update
+    - restore
 
 - name: Store control_plane node-token
   set_fact:
@@ -53,6 +55,7 @@
   when: inventory_hostname == groups['control_plane'][0]
   tags: 
     - cluster_update
+    - restore
 
 - name: Restore node-token file access
   file:

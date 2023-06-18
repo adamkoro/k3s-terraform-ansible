@@ -9,6 +9,7 @@
   when: ansible_facts.architecture == "x86_64"
   tags:
     - update_k3s
+    - restore
 
 #- name: Download k3s binary x64
 #  get_url:

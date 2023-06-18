@@ -22,6 +22,7 @@
     mode: "0644"
   tags:
     - cluster_update
+    - restore
 
 - name: Enable and check K3s service
   ansible.builtin.systemd:
@@ -32,6 +33,7 @@
   tags:
     - cluster_update
     - update_k3s
+    - restore
 
 - name: Create directory .kube
   ansible.builtin.file:
@@ -39,6 +41,8 @@
     state: directory
     owner: "{{ ansible_user }}"
     mode: "u=rwx,g=rx,o="
+  tags:
+    - restore
 
 - name: Copy config file to user home directory
   ansible.builtin.copy:
@@ -47,24 +51,28 @@
     remote_src: true
     owner: "{{ ansible_user }}"
     mode: "u=rw,g=,o="
+  tags:
+    - restore
 
 - name: Delete default configs from kube config
   ansible.builtin.command: '{{ item }}'
   with_items:
-    - k3s kubectl config delete-cluster default --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config delete-context default --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config delete-user default --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config delete-cluster default --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config delete-context default --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config delete-user default --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
   changed_when: false
   tags:
-    config_update
+    - config_update
+    - restore
 
 - name: Read server cert from master
   ansible.builtin.slurp:
     path: "/var/lib/rancher/k3s/server/tls/server-ca.crt"
   register: server_cert
   tags:
-    config_update
+    - config_update
+    - restore
   when: inventory_hostname == groups['control_plane'][0]
 
 - name: Read admin client cert from master
@@ -73,7 +81,8 @@
   register: client_admin_cert
   when: inventory_hostname == groups['control_plane'][0]
   tags:
-    config_update
+    - config_update
+    - restore
 
 - name: Read admin client cert from master
   ansible.builtin.slurp:
@@ -81,34 +90,40 @@
   register: client_admin_key
   when: inventory_hostname == groups['control_plane'][0]
   tags:
-    config_update
+    - config_update
+    - restore
 
 - name: Configure kube config for {{ cluster_name }}
   ansible.builtin.command: "{{ item }}"
   with_items:
-    - k3s kubectl config set-cluster {{ kconfig_cluster_name }} --server=https://{{ cluster_endpoint }}:6443 --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set clusters.{{ kconfig_cluster_name }}.certificate-authority-data {{ server_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set-context {{ kconfig_cluster_name }} --user=admin_{{ kconfig_cluster_name }} --cluster={{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set-credentials admin_{{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-certificate-data {{ client_admin_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-key-data {{ client_admin_key.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config use-context {{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set-cluster {{ kconfig_cluster_name }} --server=https://{{ cluster_endpoint }}:6443 --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set clusters.{{ kconfig_cluster_name }}.certificate-authority-data {{ server_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set-context {{ kconfig_cluster_name }} --user=admin_{{ kconfig_cluster_name }} --cluster={{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set-credentials admin_{{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-certificate-data {{ client_admin_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-key-data {{ client_admin_key.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config use-context {{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
   changed_when: false
   tags:
-    config_update
+    - config_update
+    - restore
 
 - name: Create kubectl symlink
   ansible.builtin.file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/kubectl
     state: link
+  tags:
+    - restore
 
 - name: Create crictl symlink
   ansible.builtin.file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/crictl
     state: link
+  tags:
+    - restore
 
 - name: Copy kubeconfig from first remote master
   ansible.builtin.fetch:

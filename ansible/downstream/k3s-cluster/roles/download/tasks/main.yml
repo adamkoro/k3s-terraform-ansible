@@ -11,3 +11,4 @@
   tags:
     - update_k3s
     - etcd-recover
+    - restore

@@ -5,13 +5,6 @@
   roles:
     - role: download
 
-- name: Setup Nginx crm proxy cluster
-  hosts: loadbalancer
-  gather_facts: true
-  become: true
-  roles:
-    - role: loadbalancer
-
 - name: Initialize k3s cluster
   hosts: k3s_cluster_init
   become: true

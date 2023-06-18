@@ -40,8 +40,6 @@ spec:
             persistentVolumeClaim:
                 registry:
                     size: {{ harbor_registry_volume_size }}
-                chartmuseum:
-                    size: {{ harbor_chartmuseum_volume_size }}
         harborAdminPassword: "l{{ harbor_admin_password }}"
         secretKey: "{{ harbor_secretkey }}"
         notary:

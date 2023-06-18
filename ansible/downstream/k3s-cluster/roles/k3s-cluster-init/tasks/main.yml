@@ -5,18 +5,13 @@
     state: stopped
   failed_when: false
 
-- name: Clean previous runs of k3s-init
-  ansible.builtin.command: systemctl reset-failed k3s-init
-  failed_when: false
-  changed_when: false
-
 - name: Init cluster on etcd nodes
   ansible.builtin.command:
     cmd: "systemd-run -p RestartSec=2 \
                       -p Restart=on-failure \
                       --unit=k3s-init \
-                      k3s server {{ etcd_init_args }}"
-    creates: "{{ systemd_dir }}/k3s.service"
+                      /usr/local/bin/k3s server {{ etcd_init_args }}"
+    creates: "{{ systemd_dir }}/k3s-init.service"
   when: inventory_hostname in groups['etcd']
 
 - name: Wait for node-token
@@ -25,6 +20,7 @@
   when: inventory_hostname == groups['etcd'][0]
   tags:
     - etcd-recover
+    - restore
 
 - name: Register node-token file access mode
   ansible.builtin.stat:
@@ -49,6 +45,7 @@
   when: inventory_hostname == groups['etcd'][0]
   tags:
     - etcd-recover
+    - restore
 
 - name: Store etcd node-token
   ansible.builtin.set_fact:
@@ -56,6 +53,7 @@
   when: inventory_hostname == groups['etcd'][0]
   tags:
     - etcd-recover
+    - restore
 
 - name: Restore node-token file access
   ansible.builtin.file:
@@ -77,13 +75,13 @@
     cmd: "systemd-run -p RestartSec=2 \
                       -p Restart=on-failure \
                       --unit=k3s-init \
-                      k3s server {{ control_plane_init_args }}"
+                      /usr/local/bin/k3s server {{ control_plane_init_args }}"
     creates: "{{ systemd_dir }}/k3s.service"
   when: inventory_hostname in groups['control_plane']
 
 - name: Verify that all etcd nodes actually joined
   ansible.builtin.command:
-    cmd: k3s kubectl get nodes -l "node-role.kubernetes.io/etcd=true" -o=jsonpath="{.items[*].metadata.name}"
+    cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/etcd=true" -o=jsonpath="{.items[*].metadata.name}"
   register: nodes
   until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['etcd'] | length)
   retries: "{{ retry_count | default(20) }}"
@@ -93,7 +91,7 @@
 
 - name: Verify that all control-plane nodes actually joined
   ansible.builtin.command:
-    cmd: k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
+    cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
   register: nodes
   until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['control_plane'] | length)
   retries: "{{ retry_count | default(20) }}"

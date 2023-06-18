@@ -18,6 +18,7 @@
     disable_recommends: false
   tags:
     - package_install
+    - restore
 
 - name: Install nfs-client
   community.general.zypper:
@@ -26,6 +27,7 @@
     disable_recommends: false
   tags:
     - package_install
+    - restore
 
 - name: Enable and start iscsid
   ansible.builtin.systemd:
@@ -33,6 +35,8 @@
     daemon_reload: true
     state: restarted
     enabled: true
+  tags:
+    - restore
 
 - name: Copy K3s service file
   register: k3s_service
@@ -44,6 +48,7 @@
     mode: 0644
   tags:
     - cluster_update
+    - restore
 
 - name: Enable and check K3s service
   systemd:
@@ -54,6 +59,7 @@
   tags:
     - cluster_update
     - update_k3s
+    - restore
 
 - name: Create directory .kube
   file:
@@ -61,6 +67,8 @@
     state: directory
     owner: "{{ ansible_user }}"
     mode: "u=rwx,g=rx,o="
+  tags:
+    - restore
 
 - name: Copy config file to user home directory
   copy:
@@ -69,6 +77,8 @@
     remote_src: yes
     owner: "{{ ansible_user }}"
     mode: "u=rw,g=,o="
+  tags:
+    - restore
 
 - name: Delete default configs from kube config
   command: '{{ item }}'
@@ -77,14 +87,18 @@
     - k3s kubectl config delete-context default --kubeconfig ~{{ ansible_user }}/.kube/config
     - k3s kubectl config delete-user default --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
+  tags:
+    - restore
 
 - name: Read server cert from master
   slurp:
     path: "/var/lib/rancher/k3s/server/tls/server-ca.crt"
   register: server_cert
   tags:
-    config_update
+    - config_update
+    - restore
   when: inventory_hostname == groups['control_plane'][0]
+
 
 - name: Read admin client cert from master
   slurp:
@@ -92,7 +106,8 @@
   register: client_admin_cert
   when: inventory_hostname == groups['control_plane'][0]
   tags:
-    config_update
+    - config_update
+    - restore
 
 - name: Read admin client cert from master
   slurp:
@@ -100,7 +115,8 @@
   register: client_admin_key
   when: inventory_hostname == groups['control_plane'][0]
   tags:
-    config_update
+    - config_update
+    - restore
 
 - name: Configure kube config for {{ cluster_name }}
   command: "{{ item }}"
@@ -113,18 +129,25 @@
     - k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-key-data {{ client_admin_key.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
     - k3s kubectl config use-context {{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
+  tags:
+    - config_update
+    - restore
 
 - name: Create kubectl symlink
   file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/kubectl
     state: link
+  tags:
+    - restore
 
 - name: Create crictl symlink
   file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/crictl
     state: link
+  tags:
+    - restore
 
 - name: Copy kubeconfig from first remote master
   fetch:
@@ -141,3 +164,4 @@
   when: inventory_hostname == groups['control_plane'][0]
   tags:
     - config_update
+    - restore
