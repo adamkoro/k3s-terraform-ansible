@@ -48,3 +48,4 @@
     - cluster_update
     - update_k3s
     - restore
+    - private_registry

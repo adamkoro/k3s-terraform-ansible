@@ -27,3 +27,4 @@
     - update_k3s
     - etcd-recover
     - restore
+    - private_registry
