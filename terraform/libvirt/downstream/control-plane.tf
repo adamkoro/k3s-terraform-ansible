@@ -57,6 +57,7 @@ users:
       - ${file("${var.cloud_init_sshkey}")}
 ssh_pwauth: true
 disable_root: false
+timezone: Europe/Budapest
 chpasswd:
   list: |
     ${var.cloud_init_username}:${var.cloud_init_password}
