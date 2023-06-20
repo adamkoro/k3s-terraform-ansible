@@ -1,0 +1,6 @@
+- name: Setup Nginx crm proxy cluster
+  hosts: loadbalancer
+  gather_facts: true
+  become: true
+  roles:
+    - role: loadbalancer
