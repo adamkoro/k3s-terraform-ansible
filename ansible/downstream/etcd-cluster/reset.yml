@@ -1,5 +1,0 @@
-- hosts: etcd_cluster
-  gather_facts: yes
-  become: yes
-  roles:
-    - role: reset
