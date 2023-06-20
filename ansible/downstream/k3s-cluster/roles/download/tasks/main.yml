@@ -11,6 +11,7 @@
   tags:
     - update_k3s
     - etcd-recover
+    - agent-recover
     - restore
 
 - name: Create k3s config directory
@@ -22,6 +23,7 @@
     mode: "0755"
   tags:
     - private_registry
+    - agent-recover
 
 - name: Setup private registry
   ansible.builtin.template:
@@ -33,3 +35,4 @@
   when: inventory_hostname in groups['k3s_cluster']
   tags:
     - private_registry
+    - agent-recover

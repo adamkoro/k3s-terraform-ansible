@@ -21,6 +21,7 @@
   tags:
     - etcd-recover
     - restore
+    - agent-recover
 
 - name: Register node-token file access mode
   ansible.builtin.stat:
@@ -46,6 +47,7 @@
   tags:
     - etcd-recover
     - restore
+    - agent-recover
 
 - name: Store etcd node-token
   ansible.builtin.set_fact:
@@ -54,6 +56,7 @@
   tags:
     - etcd-recover
     - restore
+    - agent-recover
 
 - name: Restore node-token file access
   ansible.builtin.file:

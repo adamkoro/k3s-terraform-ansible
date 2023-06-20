@@ -7,6 +7,7 @@
   tags:
     - package_install
     - restore
+    - agent-recover
 
 - name: Install nfs-client
   community.general.zypper:
@@ -16,6 +17,7 @@
   tags:
     - package_install
     - restore
+    - agent-recover
 
 - name: Enable and start iscsid
   ansible.builtin.systemd:
@@ -25,6 +27,7 @@
     enabled: true
   tags:
     - restore
+    - agent-recover
 
 - name: Copy K3s service file
   ansible.builtin.template:
@@ -37,6 +40,7 @@
     - cluster_update
     - update_k3s
     - restore
+    - agent-recover
 
 - name: Enable and check K3s service
   ansible.builtin.systemd:
@@ -49,3 +53,4 @@
     - update_k3s
     - restore
     - private_registry
+    - agent-recover
