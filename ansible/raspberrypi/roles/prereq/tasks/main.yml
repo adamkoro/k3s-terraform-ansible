@@ -1,0 +1,5 @@
+- name: Install linux-modules-extra-raspi os is ubuntu
+  apt:
+    name: linux-modules-extra-raspi
+    state: present
+  when: ansible_distribution == 'Ubuntu'
