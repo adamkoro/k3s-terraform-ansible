@@ -37,10 +37,10 @@
 ## Downstream cluster
 
 #### Architecture
-- 9 node install
-  - 2 node proxy
+- 12 node install
+  - 3 node proxy
   - 3 node etcd
-  - 1 node control plane 
+  - 3 node control plane 
   - 3 node agent
 
 - [Ansible playbook](ansible/downstream/)
