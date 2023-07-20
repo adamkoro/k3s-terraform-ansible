@@ -40,11 +40,32 @@ spec:
             persistentVolumeClaim:
                 registry:
                     size: {{ harbor_registry_volume_size }}
-        harborAdminPassword: "l{{ harbor_admin_password }}"
+        harborAdminPassword: "{{ harbor_admin_password }}"
         secretKey: "{{ harbor_secretkey }}"
+        trivy:
+            enabled: false
         notary:
             enabled: false
         metrics:
             enabled: false
         cache:
             enabled: false
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+    name: aquasec
+    namespace: kube-system
+spec:
+    chart: trivy
+    targetNamespace: harbor
+    version: {{ trivy_version }}
+    repo: https://aquasecurity.github.io/helm-charts/
+    valuesContent: |-
+        ingress:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+                cert-manager.io/cluster-issuer: "letsencrypt-production"
+            hosts:
+                - host: {{ trivy_external_url }}
