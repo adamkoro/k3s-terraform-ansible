@@ -50,22 +50,38 @@ spec:
             enabled: false
         cache:
             enabled: false
----
-apiVersion: helm.cattle.io/v1
-kind: HelmChart
-metadata:
-    name: aquasec
-    namespace: kube-system
-spec:
-    chart: trivy
-    targetNamespace: harbor
-    version: {{ trivy_version }}
-    repo: https://aquasecurity.github.io/helm-charts/
-    valuesContent: |-
-        ingress:
-            enabled: true
-            ingressClassName: nginx
-            annotations:
-                cert-manager.io/cluster-issuer: "letsencrypt-production"
-            hosts:
-                - host: {{ trivy_external_url }}
+        nginx:
+            image:
+                repository: "registry.adamkoro.com/goharbor/nginx-photon"
+        portal:
+            image:
+                repository: "registry.adamkoro.com/goharbor/harbor-portal"
+        core:
+            image:
+                repository: "registry.adamkoro.com/goharbor/harbor-core"
+        jobservice:
+            image:
+                repository: "registry.adamkoro.com/goharbor/harbor-jobservice"
+        registry:
+            registry:
+                image:
+                    repository: "registry.adamkoro.com/goharbor/registry-photon"
+            controller:
+                image:
+                    repository: "registry.adamkoro.com/goharbor/harbor-registryctl"
+        trivy:
+            image:
+                repository: "registry.adamkoro.com/goharbor/trivy-adapter-photon"
+        database:
+            internal:
+                image:
+                    repository: "registry.adamkoro.com/goharbor/harbor-db"
+        redis:
+            internal:
+                image:
+                    repository: "registry.adamkoro.com/goharbor/redis-photon"
+        exporter:
+            image:
+                repository: "registry.adamkoro.com/goharbor/harbor-exporter"
+        imagePullSecrets:
+            - name: harbor-pull-secret
