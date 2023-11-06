@@ -1,5 +1,8 @@
-- name: Install linux-modules-extra-raspi os is ubuntu
+- name: Install required packages
   apt:
-    name: linux-modules-extra-raspi
+    name: 
+      - linux-modules-extra-raspi
+      - open-iscsi
+      - nfs-common
     state: present
   when: ansible_distribution == 'Ubuntu'
