@@ -40,7 +40,7 @@
     - "{{ systemd_dir }}/k3s.service"
     - "{{ systemd_dir }}/k3s-init.service"
     - /etc/rancher/k3s
-    - /var/lib/kubelet
+    - /var/lib/kubelet/*
     - /var/lib/rancher/k3s
     - /var/lib/longhorn/*
   tags:
