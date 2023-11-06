@@ -4,6 +4,7 @@
     url: https://fileserver.adamkoro.local/k3s/{{ k3s_version }}/k3s
     checksum: sha256:https://fileserver.adamkoro.local/k3s/{{ k3s_version }}/sha256sum-amd64.txt
     dest: /usr/local/bin/k3s
+    validate_certs: false
     owner: root
     group: root
     mode: "0755"
