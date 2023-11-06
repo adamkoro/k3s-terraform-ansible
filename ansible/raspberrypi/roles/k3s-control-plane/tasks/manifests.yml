@@ -48,20 +48,30 @@
   tags:
     - manifests
 
-- name: Copy harbor manifest to first master
-  template:
-    src: "harbor.yaml.j2"
-    dest: "/var/lib/rancher/k3s/server/manifests/harbor.yaml"
-    owner: root
-    group: root
-    mode: 0644
-  tags:
-    - manifests
+#- name: Copy logging manifest to first master
+#  template:
+#    src: "logging.yaml.j2"
+#    dest: "/var/lib/rancher/k3s/server/manifests/harbor.yaml"
+#    owner: root
+#    group: root
+#    mode: 0644
+#  tags:
+#    - manifests
 
-- name: Copy rosettak8s manifest to first master
+#- name: Copy rosettak8s manifest to first master
+#  template:
+#    src: "rosettak8s.yaml.j2"
+#    dest: "/var/lib/rancher/k3s/server/manifests/rosettak8s.yaml"
+#    owner: root
+#    group: root
+#    mode: 0644
+#  tags:
+#    - manifests
+
+- name: Copy longhorn manifest to first master
   template:
-    src: "rosettak8s.yaml.j2"
-    dest: "/var/lib/rancher/k3s/server/manifests/rosettak8s.yaml"
+    src: "longhorn.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/longhorn.yaml"
     owner: root
     group: root
     mode: 0644
