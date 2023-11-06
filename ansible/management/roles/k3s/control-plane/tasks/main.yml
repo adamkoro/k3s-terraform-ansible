@@ -83,9 +83,9 @@
 - name: Delete default configs from kube config
   command: '{{ item }}'
   with_items:
-    - k3s kubectl config delete-cluster default --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config delete-context default --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config delete-user default --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config delete-cluster default --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config delete-context default --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config delete-user default --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
   tags:
     - restore
@@ -121,13 +121,13 @@
 - name: Configure kube config for {{ cluster_name }}
   command: "{{ item }}"
   with_items:
-    - k3s kubectl config set-cluster {{ kconfig_cluster_name }} --server=https://{{ cluster_endpoint }}:6443 --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set clusters.{{ kconfig_cluster_name }}.certificate-authority-data {{ server_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set-context {{ kconfig_cluster_name }} --user=admin_{{ kconfig_cluster_name }} --cluster={{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set-credentials admin_{{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-certificate-data {{ client_admin_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-key-data {{ client_admin_key.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
-    - k3s kubectl config use-context {{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set-cluster {{ kconfig_cluster_name }} --server=https://{{ cluster_endpoint }}:6443 --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set clusters.{{ kconfig_cluster_name }}.certificate-authority-data {{ server_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set-context {{ kconfig_cluster_name }} --user=admin_{{ kconfig_cluster_name }} --cluster={{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set-credentials admin_{{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-certificate-data {{ client_admin_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-key-data {{ client_admin_key.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
+    - /usr/local/bin/k3s kubectl config use-context {{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['control_plane'][0]
   tags:
     - config_update
@@ -160,8 +160,9 @@
     - get_config
 
 - name: Install kubectl bash completion
-  command: 'kubectl completion bash > /etc/bash_completion.d/kubectl'
-  when: inventory_hostname == groups['control_plane'][0]
+  shell: "/usr/local/bin/kubectl completion bash > /etc/bash_completion.d/kubectl"
+  when: inventory_hostname in groups['control_plane']
   tags:
     - config_update
     - restore
+    - bash_completion

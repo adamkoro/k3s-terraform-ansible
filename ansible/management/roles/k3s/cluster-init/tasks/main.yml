@@ -16,7 +16,7 @@
     cmd: "systemd-run -p RestartSec=2 \
                       -p Restart=on-failure \
                       --unit=k3s-init \
-                      k3s server {{ init_args }}"
+                      /usr/local/bin/k3s server {{ init_args }}"
     creates: "{{ systemd_dir }}/k3s.service"
   when: inventory_hostname in groups['control_plane']
 
@@ -72,7 +72,7 @@
 
 - name: Verify that all control_plane nodes actually joined
   command:
-    cmd: k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
+    cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
   register: nodes
   until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['control_plane'] | length)
   retries: "{{ retry_count | default(20) }}"
