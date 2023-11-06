@@ -1,0 +1,46 @@
+- name: Proxy node setup
+  become: true
+  hosts: all
+  vars:
+    filesystem_type: xfs
+    swap_disk: /dev/vda
+  tasks:
+    ###############
+    ## swap disk
+    ###############
+    - name: Check if swap disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value "{{ swap_disk }}"
+      register: fs_swap
+      changed_when: false
+      failed_when: false
+
+    - name: Create a filesystem for swap
+      filesystem:
+        dev: "{{ swap_disk }}"
+        fstype: swap
+        force: true
+      when: fs_swap.stdout is defined and (fs_swap.stdout != "swap" or not fs_swap.stdout)
+
+    - name: Get swap disk UUID
+      ansible.builtin.command: blkid -s UUID -o value {{ swap_disk }}
+      register: uuid_swap
+      changed_when: false
+
+    ###############
+    ## mount created disks
+    ###############
+    - name: Add disks to fstab
+      ansible.builtin.blockinfile:
+        path: /etc/fstab
+        state: present
+        block: |
+          UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
+      when: uuid_swap.stdout is defined
+
+    - name: Enable swap
+      ansible.builtin.command: swapon -a
+      changed_when: false
+
+    - name: Mount disks
+      ansible.builtin.command: mount -a
+      changed_when: false

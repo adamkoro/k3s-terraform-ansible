@@ -1,0 +1,106 @@
+- name: Control-plane node setup
+  become: true
+  hosts: all
+  vars:
+    filesystem_type: xfs
+    swap_disk: /dev/vda
+    kubelet_disk: /dev/vdc
+    kubelet_mount: /var/lib/kubelet
+    rancher_disk: /dev/vdb
+    rancher_mount: /var/lib/rancher
+  tasks:
+    ###############
+    ## swap disk
+    ###############
+    - name: Check if swap disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value "{{ swap_disk }}"
+      register: fs_swap
+      changed_when: false
+      failed_when: false
+
+    - name: Create a filesystem for swap
+      filesystem:
+        dev: "{{ swap_disk }}"
+        fstype: swap
+        force: true
+      when: fs_swap.stdout is defined and (fs_swap.stdout != "swap" or not fs_swap.stdout)
+
+    - name: Get swap disk UUID
+      ansible.builtin.command: blkid -s UUID -o value {{ swap_disk }}
+      register: uuid_swap
+      changed_when: false
+
+    ###############
+    ## kubelet disk
+    ###############
+    - name: Check if kubelet disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value {{ kubelet_disk }}
+      register: fs_kubelet
+      changed_when: false
+      failed_when: false
+
+    - name: Format kubelet disk
+      filesystem:
+        dev: "{{ kubelet_disk }}"
+        fstype: "{{ filesystem_type }}"
+        force: true
+      when: fs_kubelet.stdout is defined and (fs_kubelet.stdout != filesystem_type or not fs_kubelet.stdout)
+
+    - name: Get kubelet disk UUID
+      ansible.builtin.command: blkid -s UUID -o value {{ kubelet_disk }}
+      register: uuid_kubelet
+      changed_when: false
+
+    ###############
+    ## rancher disk
+    ###############
+    - name: Check if kubelet disk is formatted
+      ansible.builtin.command: blkid -s TYPE -o value {{ rancher_disk }}
+      register: fs_rancher
+      changed_when: false
+      failed_when: false
+
+    - name: Create a filesystem for rancher
+      filesystem:
+        dev: "{{ rancher_disk }}"
+        fstype: "{{ filesystem_type }}"
+        force: true
+      when: fs_rancher.stdout is defined and (fs_rancher.stdout != filesystem_type or not fs_rancher.stdout)
+
+    - name: Get rancher disk UUID
+      ansible.builtin.command: blkid -s UUID -o value {{ rancher_disk }}
+      register: uuid_rancher
+      changed_when: false
+
+    ###############
+    ## mount created disks
+    ###############
+    - name: Add disks to fstab
+      ansible.builtin.blockinfile:
+        path: /etc/fstab
+        state: present
+        block: |
+          UUID={{ uuid_swap.stdout }} swap swap defaults 0 0
+          UUID={{ uuid_kubelet.stdout }} {{ kubelet_mount }} {{ filesystem_type }} defaults 0 0
+          UUID={{ uuid_rancher.stdout }} {{ rancher_mount }} {{ filesystem_type }} defaults 0 0
+      when: uuid_swap.stdout is defined and uuid_kubelet.stdout is defined and uuid_rancher.stdout is defined
+
+    - name: Create directory for mounts
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0644"
+      loop:
+        - "{{ kubelet_mount }}"
+        - "{{ rancher_mount }}"
+
+    - name: Enable swap
+      ansible.builtin.command: swapon -a
+      changed_when: false
+
+    - name: Mount disks
+      ansible.builtin.command: mount -a
+      changed_when: false
+
