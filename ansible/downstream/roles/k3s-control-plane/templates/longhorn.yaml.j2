@@ -26,6 +26,6 @@ spec:
             host: "{{ longhorn_hostname }}"
             annotations:
                 kubernetes.io/ingress.class: "nginx"
-                cert-manager.io/cluster-issuer: "home-local"
+                cert-manager.io/cluster-issuer: "adamkoro-local"
             tls: true
             tlsSecret: longhorn-cert
