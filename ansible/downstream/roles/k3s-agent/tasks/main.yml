@@ -1,5 +1,5 @@
 ---
-- name: Install open-iscsi for Longhorn
+- name: Install open-iscsi on Suse
   community.general.zypper:
     name: open-iscsi
     state: present
@@ -8,8 +8,9 @@
     - package_install
     - restore
     - agent-recover
+  when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
 
-- name: Install nfs-client
+- name: Install nfs-client on Suse
   community.general.zypper:
     name: nfs-client
     state: present
@@ -18,6 +19,29 @@
     - package_install
     - restore
     - agent-recover
+  when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
+
+- name: Install open-iscsi on Ubuntu
+  ansible.builtin.apt:
+    name: open-iscsi
+    state: present
+    install_recommends: true
+  tags:
+    - package_install
+    - restore
+    - agent-recover
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Install nfs-client on Ubuntu
+  ansible.builtin.apt:
+    name: nfs-client
+    state: present
+    install_recommends: true
+  tags:
+    - package_install
+    - restore
+    - agent-recover
+  when: ansible_facts['distribution'] == "Ubuntu"
 
 - name: Enable and start iscsid
   ansible.builtin.systemd:
