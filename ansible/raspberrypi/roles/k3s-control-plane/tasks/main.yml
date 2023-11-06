@@ -11,33 +11,6 @@
     - manifests
     - cluster_update
 
-- name: Install open-iscsi for Longhorn
-  community.general.zypper:
-    name: open-iscsi
-    state: present
-    disable_recommends: false
-  tags:
-    - package_install
-    - restore
-
-- name: Install nfs-client
-  community.general.zypper:
-    name: nfs-client
-    state: present
-    disable_recommends: false
-  tags:
-    - package_install
-    - restore
-
-- name: Enable and start iscsid
-  ansible.builtin.systemd:
-    name: iscsid
-    daemon_reload: true
-    state: restarted
-    enabled: true
-  tags:
-    - restore
-
 - name: Copy K3s service file
   register: k3s_service
   template:
@@ -160,7 +133,7 @@
     - get_config
 
 - name: Install kubectl bash completion
-  command: 'kubectl completion bash > /etc/bash_completion.d/kubectl'
+  shell: 'kubectl completion bash > /etc/bash_completion.d/kubectl'
   when: inventory_hostname == groups['control_plane'][0]
   tags:
     - config_update
