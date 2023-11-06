@@ -6,6 +6,7 @@
     owner: root
     group: root
     mode: 0755
+    validate_certs: false
   when: ansible_facts.architecture == "x86_64"
   tags:
     - update_k3s
