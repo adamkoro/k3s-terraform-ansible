@@ -1,9 +1,17 @@
 ---
-- name: Clean previous runs of k3s-init
+- name: Stop previous runs of k3s-init
   ansible.builtin.systemd:
     name: k3s-init
     state: stopped
   failed_when: false
+
+- name: Reload the systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+#- name: Reset the failed state of the k3s-init
+#  ansible.builtin.command:
+#    cmd: systemctl reset-failed k3s-init
 
 - name: Init cluster on etcd nodes
   ansible.builtin.command:
