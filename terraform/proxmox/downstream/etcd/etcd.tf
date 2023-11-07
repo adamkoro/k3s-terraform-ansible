@@ -5,7 +5,7 @@ resource "proxmox_vm_qemu" "agent" {
     cores       = 2
     sockets     = 1
     cpu         = "host"
-    memory      = 1024
+    memory      = 2048
     agent       = 1
     onboot      = true
     scsihw      = "virtio-scsi-single"
