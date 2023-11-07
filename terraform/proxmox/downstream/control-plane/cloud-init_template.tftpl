@@ -72,13 +72,13 @@ write_files:
       WZfm2rHRGf87Y+qG5K/QPT1dCqNRtNCb67+U/qZZF83j+Gr0p5HMseuq5N8q5V93
       jJWp7PpOvPUJHt4rqutKQL0fnhrnMTnESpuyJw==
       -----END CERTIFICATE-----
-packages:
-  - qemu-guest-agent
+#packages:
+#  - qemu-guest-agent
 runcmd:
   # Uncomment if u are using an Ubuntu
   #- sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
   #- systemctl restart systemd-resolved
   #- systemctl daemon-reload
-  - systemctl enable qemu-guest-agent
-  - systemctl start qemu-guest-agent
+  #- systemctl enable qemu-guest-agent
+  #- systemctl start qemu-guest-agent
   - update-ca-certificates
