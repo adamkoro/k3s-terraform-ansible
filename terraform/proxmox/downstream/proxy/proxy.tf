@@ -4,7 +4,7 @@ resource "proxmox_vm_qemu" "agent" {
     name        = "${var.proxmox_vm_name}-proxy-${count.index + 1}"
     cores       = 2
     sockets     = 1
-    cpu         = "host"
+    cpu         = "kvm64"
     memory      = 512
     agent       = 1
     onboot      = true
@@ -26,12 +26,11 @@ resource "proxmox_vm_qemu" "agent" {
         storage = var.proxmox_swap_pool
         type    = "virtio"
         size    = var.proxmox_swap_pool_size
-        format = "qcow2"
         iothread = 1
     }
     # Cloud-init
-    cloudinit_cdrom_storage = var.proxmox_cloud_init_pool
-    cicustom = "user=${var.proxmox_cloud_init_pool}:snippets/cloud_init_${var.proxmox_vm_name}-proxy-${count.index + 1}.yml"
+    cloudinit_cdrom_storage = var.proxmox_cloudinit_pool
+    cicustom = "user=${var.proxmox_cloudinit_pool}:snippets/cloud_init_${var.proxmox_vm_name}-proxy-${count.index + 1}.yml"
     # Network
     network {
         bridge = "vmbr0"
