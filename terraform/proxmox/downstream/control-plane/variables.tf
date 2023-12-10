@@ -96,9 +96,15 @@ variable "proxmox_kubelet_pool_size" {
   type        = string
   description = "Proxmox kubelet disk pool size"
 }
-variable "proxmox_cloud_init_pool" {
-  type        = string
+variable "proxmox_cloudinit_pool" {
+  type = string
   description = "Proxmox cloud-init pool"
+  
+}
+variable "cloudinit_host_pool_path" {
+  type = string
+  description = "Host pool path for cloud-init snippet"
+  
 }
 
 variable "proxmox_user" {

@@ -27,6 +27,6 @@ resource "null_resource" "cloud_init_downstream" {
 
   provisioner "file" {
     source      = element(local_file.cloud_init_downstream_control_plane_local.*.filename, count.index)
-    destination = "/var/lib/vz/snippets/cloud_init_${var.proxmox_vm_name}-cp-${count.index + 1}.yml"
+    destination = "${var.cloudinit_host_pool_path}/snippets/cloud_init_${var.proxmox_vm_name}-cp-${count.index + 1}.yml"
   }
 }
