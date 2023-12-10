@@ -2,7 +2,7 @@
   become: true
   hosts: all
   vars:
-    filesystem_type: xfs
+    filesystem_type: ext4
     swap_disk: /dev/vda
     kubelet_disk: /dev/vdc
     kubelet_mount: /var/lib/kubelet

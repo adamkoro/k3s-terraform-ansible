@@ -4,8 +4,8 @@ resource "proxmox_vm_qemu" "agent" {
     name        = "${var.proxmox_vm_name}-agent-${count.index + 1}"
     cores       = 4
     sockets     = 1
-    cpu         = "host"
-    memory      = 4096
+    cpu         = "kvm64"
+    memory      = 8192
     agent       = 1
     onboot      = true
     scsihw      = "virtio-scsi-single"
@@ -26,7 +26,6 @@ resource "proxmox_vm_qemu" "agent" {
         storage = var.proxmox_swap_pool
         type    = "virtio"
         size    = var.proxmox_swap_pool_size
-        format = "qcow2"
         iothread = 1
     }
     # Rancher
@@ -34,7 +33,6 @@ resource "proxmox_vm_qemu" "agent" {
         storage = var.proxmox_rancher_pool
         type    = "virtio"
         size    = var.proxmox_rancher_pool_size
-        format = "qcow2"
         iothread = 1
     }
     # Kubelet
@@ -42,7 +40,6 @@ resource "proxmox_vm_qemu" "agent" {
         storage = var.proxmox_kubelet_pool
         type    = "virtio"
         size    = var.proxmox_kubelet_pool_size
-        format = "qcow2"
         iothread = 1
     }
     # Longhorn
@@ -50,18 +47,17 @@ resource "proxmox_vm_qemu" "agent" {
         storage = var.proxmox_longhorn_pool
         type    = "virtio"
         size    = var.proxmox_longhorn_pool_size
-        format = "qcow2"
         iothread = 1
     }
     # Cloud-init
-    cloudinit_cdrom_storage = var.proxmox_cloud_init_pool
-    cicustom = "user=${var.proxmox_cloud_init_pool}:snippets/cloud_init_${var.proxmox_vm_name}-agent-${count.index + 1}.yml"
+    cloudinit_cdrom_storage = var.proxmox_cloudinit_pool
+    ipconfig0 = "ip=${var.cloud_init_ip_pool}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway}"
+    cicustom = "user=${var.proxmox_cloudinit_pool}:snippets/cloud_init_${var.proxmox_vm_name}-agent-${count.index + 1}.yml"
     # Network
     network {
         bridge = "vmbr0"
         model  = "virtio"
     }
-    ipconfig0 = "ip=${var.cloud_init_ip_pool}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway}"
     # Check if vm ssh port is open
     provisioner "local-exec" {
         command = "while ! nc -q0 ${var.cloud_init_ip_pool}${count.index + var.cloud_init_ip_increase} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
