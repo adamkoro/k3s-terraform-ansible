@@ -29,7 +29,7 @@ spec:
                     core: {{ harbor_external_url }}
                 className: nginx
                 annotations:
-                    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+                    cert-manager.io/cluster-issuer: "letsencrypt-production"
         externalURL: https://{{ harbor_external_url }}
         ipFamily:
             ipv6:
@@ -40,7 +40,7 @@ spec:
             persistentVolumeClaim:
                 registry:
                     size: {{ harbor_registry_volume_size }}
-        harborAdminPassword: "l{{ harbor_admin_password }}"
+        harborAdminPassword: "{{ harbor_admin_password }}"
         secretKey: "{{ harbor_secretkey }}"
         notary:
             enabled: false

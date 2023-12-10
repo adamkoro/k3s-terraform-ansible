@@ -42,12 +42,10 @@ spec:
                     size: {{ harbor_registry_volume_size }}
         harborAdminPassword: "{{ harbor_admin_password }}"
         secretKey: "{{ harbor_secretkey }}"
-        trivy:
-            enabled: true
         notary:
             enabled: false
         metrics:
-            enabled: true
+            enabled: false
         cache:
             enabled: false
         nginx:
@@ -70,6 +68,7 @@ spec:
                 image:
                     repository: "registry.adamkoro.com/goharbor/harbor-registryctl"
         trivy:
+            enabled: false
             image:
                 repository: "registry.adamkoro.com/goharbor/trivy-adapter-photon"
         database:

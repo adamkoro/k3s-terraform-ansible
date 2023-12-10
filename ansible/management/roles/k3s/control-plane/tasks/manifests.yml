@@ -77,3 +77,13 @@
     mode: 0644
   tags:
     - manifests
+
+- name: Copy harbor manifest to first master
+  template:
+    src: "harbor.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/harbor.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
