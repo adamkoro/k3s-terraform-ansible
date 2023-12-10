@@ -5,13 +5,6 @@
     state: stopped
   failed_when: false
 
-- name: Copy manifests to the first node
-  ansible.builtin.include_tasks: manifests.yml
-  when: inventory_hostname == groups['control_plane'][0]
-  tags:
-    - manifests
-    - cluster_update
-
 - name: Copy K3s service file
   register: k3s_service
   ansible.builtin.template:
@@ -35,6 +28,13 @@
     - update_k3s
     - restore
     - private_registry
+
+- name: Copy manifests to the first node
+  ansible.builtin.include_tasks: manifests.yml
+  when: inventory_hostname == groups['control_plane'][0]
+  tags:
+    - manifests
+    - cluster_update
 
 - name: Create directory .kube
   ansible.builtin.file:
