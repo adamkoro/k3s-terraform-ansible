@@ -4,6 +4,7 @@ data "template_file" "cloud_init_management_template" {
   vars = {
     ssh_key  = var.cloud_init_pub_ssh_key
     username = var.cloud_init_username
+    password = var.cloud_init_password
     hostname = "${var.proxmox_vm_name}-${count.index + 1}"
     domain   = var.cloud_init_domain
   }
@@ -12,7 +13,7 @@ data "template_file" "cloud_init_management_template" {
 resource "local_file" "cloud_init_management_local" {
   count    = var.vm_count
   content  = element(data.template_file.cloud_init_management_template.*.rendered, count.index)
-  filename = "${path.module}/files/cloud_init_mgmt_cp_${count.index + 1}.cfg"
+  filename = "${path.module}/files/cloud_init_mgmt-${count.index + 1}.cfg"
 }
 
 resource "null_resource" "cloud_init_management" {
@@ -26,6 +27,6 @@ resource "null_resource" "cloud_init_management" {
 
   provisioner "file" {
     source      = element(local_file.cloud_init_management_local.*.filename, count.index)
-    destination = "/var/lib/vz/snippets/cloud_init_mgmt_cp_${count.index + 1}.yml"
+    destination = "${var.cloudinit_host_pool_path}/snippets/cloud_init_mgmt-${count.index + 1}.yml"
   }
 }

@@ -2,7 +2,7 @@
   become: true
   hosts: all
   vars:
-    filesystem_type: xfs
+    filesystem_type: ext4
     swap_disk: /dev/sdb
     kubelet_disk: /dev/sdd
     kubelet_mount: /var/lib/kubelet
@@ -21,7 +21,7 @@
       failed_when: false
 
     - name: Create a filesystem for swap
-      community.general.filesystem:
+      filesystem:
         dev: "{{ swap_disk }}"
         fstype: swap
         force: true
@@ -42,7 +42,7 @@
       failed_when: false
 
     - name: Format kubelet disk
-      community.general.filesystem:
+      filesystem:
         dev: "{{ kubelet_disk }}"
         fstype: "{{ filesystem_type }}"
         force: true
@@ -63,7 +63,7 @@
       failed_when: false
 
     - name: Create a filesystem for rancher
-      community.general.filesystem:
+      filesystem:
         dev: "{{ rancher_disk }}"
         fstype: "{{ filesystem_type }}"
         force: true
@@ -84,7 +84,7 @@
       failed_when: false
 
     - name: Create a filesystem for longhorn
-      community.general.filesystem:
+      filesystem:
         dev: "{{ longhorn_disk }}"
         fstype: "{{ filesystem_type }}"
         force: true

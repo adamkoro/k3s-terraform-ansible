@@ -80,6 +80,16 @@ variable "proxmox_kubelet_pool" {
   type        = string
   description = "Proxmox kubelet disk pool"
 }
+variable "proxmox_cloudinit_pool" {
+  type = string
+  description = "Proxmox cloud-init pool"
+  
+}
+variable "cloudinit_host_pool_path" {
+  type = string
+  description = "Host pool path for cloud-init snippet"
+  
+}
 variable "proxmox_user" {
   type        = string
   description = "Proxmox user"
