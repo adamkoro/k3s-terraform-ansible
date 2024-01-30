@@ -3,12 +3,12 @@
   hosts: all
   vars:
     filesystem_type: ext4
-    swap_disk: /dev/sdb
-    kubelet_disk: /dev/sdd
+    swap_disk: /dev/vda
+    kubelet_disk: /dev/vdc
     kubelet_mount: /var/lib/kubelet
-    rancher_disk: /dev/sdc
+    rancher_disk: /dev/vdb
     rancher_mount: /var/lib/rancher
-    longhorn_disk: /dev/sde
+    longhorn_disk: /dev/vdd
     longhorn_mount: /var/lib/longhorn
   tasks:
     ###############
