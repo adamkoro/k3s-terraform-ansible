@@ -68,17 +68,41 @@ variable "proxmox_root_pool" {
   type        = string
   description = "Proxmox root disk pool"
 }
+variable "proxmox_root_pool_size" {
+  type        = string
+  description = "Proxmox root disk pool size"
+}
 variable "proxmox_swap_pool" {
   type        = string
   description = "Proxmox swap disk pool"
+}
+variable "proxmox_swap_pool_size" {
+  type        = string
+  description = "Proxmox swap disk pool size"
 }
 variable "proxmox_rancher_pool" {
   type        = string
   description = "Proxmox rancher disk pool"
 }
+variable "proxmox_rancher_pool_size" {
+  type        = string
+  description = "Proxmox rancher disk pool size"
+}
 variable "proxmox_kubelet_pool" {
   type        = string
   description = "Proxmox kubelet disk pool"
+}
+variable "proxmox_kubelet_pool_size" {
+  type        = string
+  description = "Proxmox kubelet disk pool size"
+}
+variable "proxmox_longhorn_pool" {
+  type        = string
+  description = "Proxmox longhorn disk pool"
+}
+variable "proxmox_longhorn_pool_size" {
+  type        = string
+  description = "Proxmox longhorn disk pool size"
 }
 variable "proxmox_cloudinit_pool" {
   type = string
@@ -101,10 +125,6 @@ variable "proxmox_host" {
 variable "proxmox_private_key" {
   type        = string
   description = "Proxmox private key path"
-}
-variable "proxmox_longhorn_pool" {
-  type        = string
-  description = "Proxmox longhorn pool"
 }
 variable "ansbile_private_key" {
   type        = string
