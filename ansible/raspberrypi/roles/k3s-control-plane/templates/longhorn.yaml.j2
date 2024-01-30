@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: longhorn-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+    name: longhorn
+    namespace: kube-system
+spec:
+    chart: longhorn
+    version: {{ longhorn_version }}
+    repo: https://charts.longhorn.io
+    targetNamespace: longhorn-system
+    valuesContent: |-
+        persistence: 
+            defaultClassReplicaCount: {{ longhorn_replica_number }}
+        defaultSettings:
+            backupTarget: "{{ longhorn_backup_path }}"
+            defaultReplicaCount: {{ longhorn_replica_number }}
+        ingress:
+            enabled: {{ longhorn_ingress_enabled }}
+            host: "{{ longhorn_hostname }}"
+            annotations:
+                kubernetes.io/ingress.class: "nginx"
+                cert-manager.io/cluster-issuer: "adamkoro-local"
+            tls: true
+            tlsSecret: longhorn-cert
+        csi:
+            attacherReplicaCount: 1
+            provisionerReplicaCount: 1
+            resizerReplicaCount: 1
+            snapshotterReplicaCount: 1
+        longhornUI:
+            replicas: 1
