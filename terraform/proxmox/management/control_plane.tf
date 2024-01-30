@@ -13,40 +13,41 @@ resource "proxmox_vm_qemu" "management_control_plane" {
     boot        = "cdn"
     bootdisk    = "scsi0"
     clone       = var.proxmox_template_name
-    # Root
-    disk {
-        storage = var.proxmox_root_pool
-        type    = "scsi"
-        size    = "20G"
-        ssd = 1
-    }
-    # Swap
-    disk {
-        storage = var.proxmox_swap_pool
-        type    = "scsi"
-        size    = "1G"
-        ssd = 1
-    }
-    # Rancher
-    disk {
-        storage = var.proxmox_rancher_pool
-        type    = "scsi"
-        size    = "25G"
-        ssd = 1
-    }
-    # Kubelet
-    disk {
-        storage = var.proxmox_kubelet_pool
-        type    = "scsi"
-        size    = "30G"
-        ssd = 1
-    }
-    # Longhorn
-    disk {
-        storage = var.proxmox_longhorn_pool
-        type    = "scsi"
-        size    = "100G"
-        ssd = 1
+    disks {
+        virtio {
+            # swap
+            virtio0 {
+                disk {
+                    storage = var.proxmox_swap_pool
+                    size = var.proxmox_swap_pool_size
+                    iothread = true
+                }
+            }
+            # rancher
+            virtio1 {
+                disk {
+                    storage = var.proxmox_rancher_pool
+                    size = var.proxmox_rancher_pool_size
+                    iothread = true
+                }
+            }
+            # kubelet
+            virtio2 {
+                disk {
+                    storage = var.proxmox_kubelet_pool
+                    size = var.proxmox_kubelet_pool_size
+                    iothread = true
+                }
+            }
+            # longhorn
+            virtio3 {
+                disk {
+                    storage = var.proxmox_longhorn_pool
+                    size = var.proxmox_longhorn_pool_size
+                    iothread = true
+                }
+            }
+        }
     }
     network {
         bridge = "vmbr0"
