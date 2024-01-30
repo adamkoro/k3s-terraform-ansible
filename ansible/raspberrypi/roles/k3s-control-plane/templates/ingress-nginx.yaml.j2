@@ -13,8 +13,6 @@ spec:
         controller:
           kind: DaemonSet
           hostNetwork: true
-          nodeSelector:
-            node.kubernetes.io/control-plane: "true"
           hostPort:
             enabled: false
           service:
