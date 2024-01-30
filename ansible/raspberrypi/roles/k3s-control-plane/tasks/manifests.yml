@@ -4,7 +4,7 @@
     state: directory
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -14,7 +14,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/cert-manager.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -24,7 +24,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/cert-manager-issuer.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -34,7 +34,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/ingress-nginx.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -44,7 +44,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/metallb.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -74,6 +74,36 @@
     dest: "/var/lib/rancher/k3s/server/manifests/longhorn.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
+  tags:
+    - manifests
+
+- name: Copy argocd manifest to first master
+  template:
+    src: "argocd.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/argocd.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  tags:
+    - manifests
+
+- name: Copy influxdb manifest to first master
+  template:
+    src: "influxdb.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/influxdb.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  tags:
+    - manifests
+
+- name: Copy node-exporter manifest to first master
+  template:
+    src: "node-exporter.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/node-exporter.yaml"
+    owner: root
+    group: root
+    mode: 0640
   tags:
     - manifests
