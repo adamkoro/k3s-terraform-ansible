@@ -2,12 +2,15 @@
   apt:
     name: 
       - linux-modules-extra-raspi
+      - open-iscsi
+      - nfs-common
     state: present
   when: ansible_distribution == 'Ubuntu'
 
-- name: Install required packages Debian
+- name: Install required packages for Debian
   apt:
     name: 
       - open-iscsi
       - nfs-common
     state: present
+  when: ansible_distribution == 'Debian'
