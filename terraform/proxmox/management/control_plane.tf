@@ -56,7 +56,7 @@ resource "proxmox_vm_qemu" "management_control_plane" {
     os_type = "cloud-init"
     cloudinit_cdrom_storage = "${var.proxmox_cloudinit_pool}"
     ipconfig0 = "ip=${var.cloud_init_ip_pool}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway}"
-    cicustom = "user=${var.proxmox_cloudinit_pool}:snippets/cloud_init_mgmt-${count.index+1}.yml"
+    cicustom = "user=${var.proxmox_cloudinit_pool}:snippets/cloud_init_${proxmox_vm_name}-${count.index + 1}.yml"
 
     provisioner "local-exec" {
         command = "while ! nc -q0 ${var.cloud_init_ip_pool}${count.index + var.cloud_init_ip_increase} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
