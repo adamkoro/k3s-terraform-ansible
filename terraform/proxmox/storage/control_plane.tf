@@ -21,6 +21,7 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
                     size = var.proxmox_root_pool_size
                     iothread = true
                     emulatessd = true
+                    asyncio = "native"
                 }
             }
         }
@@ -31,6 +32,7 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
                     storage = var.proxmox_swap_pool
                     size = var.proxmox_swap_pool_size
                     iothread = true
+                    asyncio = "native"
                 }
             }
             # rancher
@@ -39,6 +41,7 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
                     storage = var.proxmox_rancher_pool
                     size = var.proxmox_rancher_pool_size
                     iothread = true
+                    asyncio = "native"
                 }
             }
             # kubelet
@@ -47,6 +50,7 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
                     storage = var.proxmox_kubelet_pool
                     size = var.proxmox_kubelet_pool_size
                     iothread = true
+                    asyncio = "native"
                 }
             }
             # longhorn
@@ -55,6 +59,7 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
                     storage = var.proxmox_longhorn_pool
                     size = var.proxmox_longhorn_pool_size
                     iothread = true
+                    asyncio = "native"
                 }
             }
         }
