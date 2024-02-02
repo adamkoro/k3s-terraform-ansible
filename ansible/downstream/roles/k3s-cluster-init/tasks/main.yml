@@ -1,4 +1,52 @@
 ---
+# If airgapped, all K3s artifacts are already on the node.
+- name: Download K3s install script
+  when: airgap_dir is undefined
+  ansible.builtin.get_url:
+    url: https://get.k3s.io/
+    timeout: 120
+    dest: /usr/local/bin/k3s-install.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Download K3s binary
+  when: airgap_dir is undefined
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s-install.sh
+  environment:
+    INSTALL_K3S_SKIP_START: "true"
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+  changed_when: true
+
+- name: Setup optional config file [etcd]
+  when: etcd_config_yaml is defined and inventory_hostname in groups['etcd']
+  block:
+    - name: Make config directory
+      ansible.builtin.file:
+        path: "/etc/rancher/k3s"
+        mode: 0750
+        state: directory
+    - name: Copy config values
+      ansible.builtin.copy:
+        content: "{{ etcd_config_yaml }}"
+        dest: "/etc/rancher/k3s/config.yaml"
+        mode: 0640
+
+- name: Setup optional config file [server]
+  when: server_config_yaml is defined and inventory_hostname in groups['server']
+  block:
+    - name: Make config directory
+      ansible.builtin.file:
+        path: "/etc/rancher/k3s"
+        mode: 0750
+        state: directory
+    - name: Copy config values
+      ansible.builtin.copy:
+        content: "{{ server_config_yaml }}"
+        dest: "/etc/rancher/k3s/config.yaml"
+        mode: 0640
+
 - name: Stop previous runs of k3s-init
   ansible.builtin.systemd:
     name: k3s-init
@@ -19,7 +67,6 @@
                       -p Restart=on-failure \
                       --unit=k3s-init \
                       /usr/local/bin/k3s server {{ etcd_init_args }}"
-    creates: "{{ systemd_dir }}/k3s-init.service"
   when: inventory_hostname in groups['etcd']
 
 - name: Wait for node-token
@@ -79,16 +126,15 @@
     host: "{{ hostvars[groups['etcd'][0]].flannel_node_ip }}"
     port: 6443
     delay: 10
-  when: inventory_hostname in groups['control_plane']
+  when: inventory_hostname in groups['server']
 
 - name: Init cluster on control-plane nodes
   ansible.builtin.command:
     cmd: "systemd-run -p RestartSec=2 \
                       -p Restart=on-failure \
                       --unit=k3s-init \
-                      /usr/local/bin/k3s server {{ control_plane_init_args }}"
-    creates: "{{ systemd_dir }}/k3s.service"
-  when: inventory_hostname in groups['control_plane']
+                      /usr/local/bin/k3s server {{ server_init_args }}"
+  when: inventory_hostname in groups['server']
 
 - name: Verify that all etcd nodes actually joined
   ansible.builtin.command:
@@ -97,15 +143,15 @@
   until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['etcd'] | length)
   retries: "{{ retry_count | default(20) }}"
   delay: 10
-  when: inventory_hostname in groups['control_plane']
+  when: inventory_hostname in groups['server']
   changed_when: false
 
 - name: Verify that all control-plane nodes actually joined
   ansible.builtin.command:
     cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
   register: nodes
-  until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['control_plane'] | length)
+  until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['server'] | length)
   retries: "{{ retry_count | default(20) }}"
   delay: 10
-  when: inventory_hostname in groups['control_plane']
+  when: inventory_hostname in groups['server']
   changed_when: false

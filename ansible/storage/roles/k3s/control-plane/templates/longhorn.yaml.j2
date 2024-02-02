@@ -19,7 +19,7 @@ spec:
             defaultClassReplicaCount: {{ longhorn_replica_number }}
         defaultSettings:
             backupTarget: "{{ longhorn_backup_path }}"
-            defaultSettings.backupTargetCredentialSecret: "{{ longhorn_backup_secret }}"
+            backupTargetCredentialSecret: "{{ longhorn_backup_secret }}"
             defaultReplicaCount: {{ longhorn_replica_number }}
             createDefaultDiskLabeledNodes: {{ longhorn_disk_on_labeled_node }}
         ingress:

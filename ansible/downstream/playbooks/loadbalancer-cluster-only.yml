@@ -1,0 +1,13 @@
+- name: Geather facts
+  hosts:
+    - k3s_cluster_init
+    - loadbalancer
+  gather_facts: true
+
+- name: Setup Nginx crm proxy cluster
+  hosts: 
+    - loadbalancer
+  gather_facts: true
+  become: true
+  roles:
+    - role: loadbalancer

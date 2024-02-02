@@ -25,7 +25,7 @@ stream {
     ## Control-Plane
     #########
     upstream kube_api_control-plane_nodes {
-    {% for host in groups['control_plane'] %}
+    {% for host in groups['server'] %}
         server {{ hostvars[host]['ansible_default_ipv4']['address'] }}:6443 max_fails=3 fail_timeout=5s;
     {% endfor %}
     }
@@ -39,7 +39,7 @@ stream {
     ## Control-Plane
     #########
     upstream kube_http {
-    {% for host in groups['control_plane'] %}
+    {% for host in groups['server'] %}
         server {{ hostvars[host]['ansible_default_ipv4']['address'] }}:80 max_fails=3 fail_timeout=5s;
     {% endfor %}
     }
@@ -53,7 +53,7 @@ stream {
     ## Control-Plane
     #########
     upstream kube_https {
-    {% for host in groups['control_plane'] %}
+    {% for host in groups['server'] %}
         server {{ hostvars[host]['ansible_default_ipv4']['address'] }}:443 max_fails=3 fail_timeout=5s;
     {% endfor %}
     }

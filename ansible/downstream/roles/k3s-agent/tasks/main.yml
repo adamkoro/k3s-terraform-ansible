@@ -1,7 +1,23 @@
 ---
-- name: Install open-iscsi on Suse
+- name: Setup optional config file [agent]
+  when: agent_config_yaml is defined and inventory_hostname in groups['agent']
+  block:
+    - name: Make config directory
+      ansible.builtin.file:
+        path: "/etc/rancher/k3s"
+        mode: 0750
+        state: directory
+    - name: Copy config values
+      ansible.builtin.copy:
+        content: "{{ agent_config_yaml }}"
+        dest: "/etc/rancher/k3s/config.yaml"
+        mode: 0640
+
+- name: Install Longhorn requirements
   community.general.zypper:
-    name: open-iscsi
+    name: 
+      - open-iscsi
+      - nfs-client
     state: present
     disable_recommends: false
   tags:
@@ -10,31 +26,11 @@
     - agent-recover
   when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
 
-- name: Install nfs-client on Suse
-  community.general.zypper:
-    name: nfs-client
-    state: present
-    disable_recommends: false
-  tags:
-    - package_install
-    - restore
-    - agent-recover
-  when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
-
-- name: Install open-iscsi on Ubuntu
+- name: Install Longhorn requirements
   ansible.builtin.apt:
-    name: open-iscsi
-    state: present
-    install_recommends: true
-  tags:
-    - package_install
-    - restore
-    - agent-recover
-  when: ansible_facts['distribution'] == "Ubuntu"
-
-- name: Install nfs-client on Ubuntu
-  ansible.builtin.apt:
-    name: nfs-client
+    name: 
+      - open-iscsi
+      - nfs-client
     state: present
     install_recommends: true
   tags:
@@ -56,7 +52,7 @@
 - name: Copy K3s service file
   ansible.builtin.template:
     src: "k3s.service.j2"
-    dest: "/etc/systemd/system/k3s-worker.service"
+    dest: "/etc/systemd/system/k3s.service"
     owner: root
     group: root
     mode: "0755"
@@ -68,7 +64,7 @@
 
 - name: Enable and check K3s service
   ansible.builtin.systemd:
-    name: k3s-worker
+    name: k3s
     daemon_reload: true
     state: restarted
     enabled: true

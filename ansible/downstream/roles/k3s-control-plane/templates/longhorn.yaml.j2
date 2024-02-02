@@ -20,6 +20,7 @@ spec:
         defaultSettings:
             backupTarget: "{{ longhorn_backup_path }}"
             defaultReplicaCount: {{ longhorn_replica_number }}
+            backupTargetCredentialSecret: "{{ longhorn_backup_secret }}"
             createDefaultDiskLabeledNodes: {{ longhorn_disk_on_labeled_node }}
         ingress:
             enabled: {{ longhorn_ingress_enabled }}
@@ -29,3 +30,14 @@ spec:
                 cert-manager.io/cluster-issuer: "adamkoro-local"
             tls: true
             tlsSecret: longhorn-cert
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    name: "{{ longhorn_backup_secret }}"
+    namespace: longhorn-system
+type: Opaque
+stringData:
+    AWS_ACCESS_KEY_ID: "{{ longhhorn_backup_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ longhhorn_backup_secret_key_id }}" 
+    AWS_ENDPOINTS: "{{ longhorn_backup_s3_endpoints }}"

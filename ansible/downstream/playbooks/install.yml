@@ -1,9 +1,17 @@
-- name: Download k3s binary
+- name: Prerequriements
   hosts: k3s_cluster
   gather_facts: true
   become: true
   roles:
-    - role: download
+    - role: prereq
+    - role: airgap
+
+- name: Setup Nginx crm proxy cluster
+  hosts: loadbalancer
+  gather_facts: true
+  become: true
+  roles:
+    - role: loadbalancer
 
 - name: Initialize k3s cluster
   hosts: k3s_cluster_init

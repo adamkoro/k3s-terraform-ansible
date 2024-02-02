@@ -18,7 +18,6 @@
   tags:
     - remove_all
 
-
 - name: Umount k3s filesystems
   ansible.builtin.include_tasks: umount_with_children.yml
   with_items:
