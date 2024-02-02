@@ -6,23 +6,16 @@
 
 - name: Copy manifests to the first node
   include_tasks: manifests.yml
-  when: inventory_hostname == groups['control_plane'][0]
+  when: inventory_hostname == groups['server'][0] and skip_manifest_deploy is false
   tags:
     - manifests
     - cluster_update
 
-- name: Install open-iscsi for Longhorn
+- name: Install Longhorn requirements
   community.general.zypper:
-    name: open-iscsi
-    state: present
-    disable_recommends: false
-  tags:
-    - package_install
-    - restore
-
-- name: Install nfs-client
-  community.general.zypper:
-    name: nfs-client
+    name: 
+      - open-iscsi
+      - nfs-client
     state: present
     disable_recommends: false
   tags:
@@ -86,7 +79,7 @@
     - /usr/local/bin/k3s kubectl config delete-cluster default --kubeconfig ~{{ ansible_user }}/.kube/config
     - /usr/local/bin/k3s kubectl config delete-context default --kubeconfig ~{{ ansible_user }}/.kube/config
     - /usr/local/bin/k3s kubectl config delete-user default --kubeconfig ~{{ ansible_user }}/.kube/config
-  when: inventory_hostname == groups['control_plane'][0]
+  when: inventory_hostname == groups['server'][0]
   tags:
     - restore
 
@@ -97,14 +90,14 @@
   tags:
     - config_update
     - restore
-  when: inventory_hostname == groups['control_plane'][0]
+  when: inventory_hostname == groups['server'][0]
 
 
 - name: Read admin client cert from master
   slurp:
     path: "/var/lib/rancher/k3s/server/tls/client-admin.crt"
   register: client_admin_cert
-  when: inventory_hostname == groups['control_plane'][0]
+  when: inventory_hostname == groups['server'][0]
   tags:
     - config_update
     - restore
@@ -113,7 +106,7 @@
   slurp:
     path: "/var/lib/rancher/k3s/server/tls/client-admin.key"
   register: client_admin_key
-  when: inventory_hostname == groups['control_plane'][0]
+  when: inventory_hostname == groups['server'][0]
   tags:
     - config_update
     - restore
@@ -128,7 +121,7 @@
     - /usr/local/bin/k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-certificate-data {{ client_admin_cert.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
     - /usr/local/bin/k3s kubectl config set users.admin_{{ kconfig_cluster_name }}.client-key-data {{ client_admin_key.content }} --kubeconfig ~{{ ansible_user }}/.kube/config
     - /usr/local/bin/k3s kubectl config use-context {{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
-  when: inventory_hostname == groups['control_plane'][0]
+  when: inventory_hostname == groups['server'][0]
   tags:
     - config_update
     - restore
@@ -154,14 +147,14 @@
     src: "~{{ ansible_user }}/.kube/config"
     dest: "~/.kube/config.{{ kconfig_cluster_name }}"
     flat: yes
-  when: inventory_hostname == groups['control_plane'][0]
+  when: inventory_hostname == groups['server'][0]
   tags:
     - config_update
     - get_config
 
 - name: Install kubectl bash completion
   shell: "/usr/local/bin/kubectl completion bash > /etc/bash_completion.d/kubectl"
-  when: inventory_hostname in groups['control_plane']
+  when: inventory_hostname in groups['server']
   tags:
     - config_update
     - restore

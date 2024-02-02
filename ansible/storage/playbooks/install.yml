@@ -2,14 +2,15 @@
   gather_facts: true
   become: true
   roles:
-    - role: download
+    - role: prereq
+    - role: airgap
 
-- hosts: control_plane
+- hosts: server
   become: true
   roles:
     - role: k3s/cluster-init
 
-- hosts: control_plane
+- hosts: server
   become: true
   roles:
     - role: k3s/control-plane
