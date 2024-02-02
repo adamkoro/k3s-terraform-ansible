@@ -9,3 +9,5 @@ pihole*
 all.yml*
 all.yaml*
 files
+longhorn*backup.yaml
+inventory.yaml
