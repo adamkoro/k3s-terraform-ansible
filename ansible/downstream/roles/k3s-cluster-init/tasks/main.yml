@@ -19,73 +19,67 @@
     INSTALL_K3S_VERSION: "{{ k3s_version }}"
   changed_when: true
 
-- name: Setup optional config file [etcd]
+- name: Setup optional config file
   when: etcd_config_yaml is defined and inventory_hostname in groups['etcd']
   block:
-    - name: Make config directory
+    - name: Make config directory [etcd]
       ansible.builtin.file:
         path: "/etc/rancher/k3s"
         mode: 0750
         state: directory
-    - name: Copy config values
+    - name: Copy config values [etcd]
       ansible.builtin.copy:
         content: "{{ etcd_config_yaml }}"
         dest: "/etc/rancher/k3s/config.yaml"
         mode: 0640
 
-- name: Setup optional config file [server]
+- name: Setup optional config file
   when: server_config_yaml is defined and inventory_hostname in groups['server']
   block:
-    - name: Make config directory
+    - name: Make config directory [server]
       ansible.builtin.file:
         path: "/etc/rancher/k3s"
         mode: 0750
         state: directory
-    - name: Copy config values
+    - name: Copy config values [server]
       ansible.builtin.copy:
         content: "{{ server_config_yaml }}"
         dest: "/etc/rancher/k3s/config.yaml"
         mode: 0640
 
-- name: Check if kubectl is installed
-  ansible.builtin.command: "/usr/local/bin/k3s kubectl version --client"
+- name: Check if kubectl is installed [server]
+  command: "/usr/local/bin/k3s kubectl version --client"
   register: kubectl_check
-  ignore_errors: true
-  when: inventory_hostname in groups['server'][0]
+  failed_when: kubectl_check.rc != 0
+  changed_when: false
+  when: inventory_hostname in groups['server']
 
-- name: Check if cluster main section is up
-  block:
-  - name: Verify that all etcd nodes are up
+- block:
+  - name: Get list of etcd nodes and check if all etcd nodes are up
     block:
-    - name: Get list of etcd nodes
-      ansible.builtin.command:
-        cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/etcd=true" -o=jsonpath="{.items[*].metadata.name}"
-      register: nodes
+    - name: Get list of nodes [etcd]
+      command: "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/etcd=true' -o=jsonpath='{.items[*].metadata.name}'"
+      register: etcd_nodes_list
       changed_when: false
-    - name: Set etcd_nodes variable
-      ansible.builtin.set_fact:
+    - name: Set etcd_nodes variable [etcd]
+      set_fact:
         etcd_nodes: true
-      when: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['etcd'] | length)
-    when: inventory_hostname in groups['server'][0]
-
-  - name: Verify that all etcd nodes are up
+      when: etcd_nodes_list.rc == 0 and (etcd_nodes_list.stdout.split() | length) == (groups['etcd'] | length)
+  - name: Get list of control-plane nodes and check if all control-plane nodes are up
     block:
-    - name: Get list of etcd nodes
-      ansible.builtin.command:
-        cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
-      register: nodes
+    - name: Get list of nodes [server]
+      command: "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/control-plane=true' -o=jsonpath='{.items[*].metadata.name}'"
+      register: control_plane_nodes_list
       changed_when: false
-    - name: Set server_nodes variable
-      ansible.builtin.set_fact:
-        server_nodes: true
-      when: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['server'] | length)
-    when: inventory_hostname in groups['server'][0]
-
-  - name: init_cluster variable set to false
-    ansible.builtin.set_fact:
+    - name: Set control_plane_nodes variable [server]
+      set_fact:
+        control_plane_nodes: true
+      when: control_plane_nodes_list.rc == 0 and (control_plane_nodes_list.stdout.split() | length) == (groups['server'] | length)
+  - name: Set init_cluster variable to false if both etcd and control-plane nodes are up
+    set_fact:
       init_cluster: false
-    when: etcd_nodes is true and server_nodes is true and inventory_hostname in groups['server'][0]
-  when: kubectl_check is succeeded
+    when: etcd_nodes is true and control_plane_nodes is true
+  when: kubectl_check is succeeded and inventory_hostname in groups['server']
 
 - name: Init cluster
   when: init_cluster is true
