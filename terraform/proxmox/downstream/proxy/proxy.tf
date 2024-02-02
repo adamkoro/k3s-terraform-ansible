@@ -1,4 +1,4 @@
-resource "proxmox_vm_qemu" "agent" {
+resource "proxmox_vm_qemu" "proxy" {
     count       = var.vm_count
     target_node = var.proxmox_target_node
     name        = "${var.proxmox_vm_name}-proxy-${count.index + 1}"
@@ -10,23 +10,34 @@ resource "proxmox_vm_qemu" "agent" {
     onboot      = true
     scsihw      = "virtio-scsi-single"
     full_clone  = true
-    boot        = "cdn"
     bootdisk    = "scsi0"
     startup     = "order=1"
     clone       = var.proxmox_template_name
     os_type = "cloud-init"
-    # Root
-    disk {
-        storage = var.proxmox_root_pool
-        type    = "scsi"
-        size    = var.proxmox_root_pool_size
-    }
-    # Swap
-    disk {
-        storage = var.proxmox_swap_pool
-        type    = "virtio"
-        size    = var.proxmox_swap_pool_size
-        iothread = 1
+disks {
+        scsi {
+            # Root
+            scsi0 {
+                disk {
+                    storage = var.proxmox_root_pool
+                    size = var.proxmox_root_pool_size
+                    iothread = true
+                    emulatessd = true
+                    asyncio = "native"
+                }
+            }
+        }
+        virtio {
+            # swap
+            virtio0 {
+                disk {
+                    storage = var.proxmox_swap_pool
+                    size = var.proxmox_swap_pool_size
+                    iothread = true
+                    asyncio = "native"
+                }
+            }
+        }
     }
     # Cloud-init
     cloudinit_cdrom_storage = var.proxmox_cloudinit_pool

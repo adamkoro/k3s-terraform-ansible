@@ -2,20 +2,20 @@ terraform {
   required_version = ">= 0.13.0"
   required_providers {
     proxmox = {
-      source = "TheGameProfi/proxmox"
-      version = "2.9.15"
+      source = "Telmate/proxmox"
+      version = "3.0.1-rc1"
     }
     local = {
       source  = "hashicorp/local"
-      version = "2.1.0"
+      version = "2.4.1"
     }
     null = {
       source  = "hashicorp/null"
-      version = "2.1.2"
+      version = "3.2.2"
     }
     template = {
       source  = "hashicorp/template"
-      version = "2.1.2"
+      version = "2.2.0"
     }
   }
 }

@@ -69,7 +69,7 @@ variable "proxmox_root_pool" {
   description = "Proxmox root disk pool"
 }
 variable "proxmox_root_pool_size" {
-  type        = string
+  type        = number
   description = "Proxmox root disk pool size"
 }
 variable "proxmox_swap_pool" {
@@ -77,7 +77,7 @@ variable "proxmox_swap_pool" {
   description = "Proxmox swap disk pool"
 }
 variable "proxmox_swap_pool_size" {
-  type        = string
+  type        = number
   description = "Proxmox swap disk pool size"
 }
 variable "proxmox_cloudinit_pool" {
