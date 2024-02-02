@@ -11,3 +11,4 @@ all.yaml*
 files
 longhorn*backup.yaml
 inventory.yaml
+airgap_install
