@@ -30,6 +30,10 @@ spec:
                 className: nginx
                 annotations:
                     cert-manager.io/cluster-issuer: "letsencrypt-production"
+                    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+                    nginx.ingress.kubernetes.io/proxy-read-timeout: "3000"
+                    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3000"
+                    nginx.ingress.kubernetes.io/proxy-buffering: "off"
         externalURL: https://{{ harbor_external_url }}
         ipFamily:
             ipv6:
@@ -45,6 +49,6 @@ spec:
         notary:
             enabled: false
         metrics:
-            enabled: false
+            enabled: true
         cache:
             enabled: true
