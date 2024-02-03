@@ -1,0 +1,12 @@
+mirrors:
+    docker.io:
+        endpoint:
+            - "https://{{ private_registry_url }}/v2/{{ private_registry_project }}"
+    "{{ private_registry_url }}":
+        endpoint:
+            - "https://{{ private_registry_url }}"
+configs:
+    "{{ private_registry_url }}":
+        auth:
+            username: "{{ private_registry_username }}"
+            password: "{{ private_registry_password }}"

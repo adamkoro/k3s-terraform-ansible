@@ -1,0 +1,7 @@
+- name: Setup control-plane nodes
+  hosts: server
+  gather_facts: true
+  become: true
+  roles:
+    - role: k3s-control-plane
+      tags: manifests

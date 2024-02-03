@@ -34,6 +34,20 @@ spec:
                     nginx.ingress.kubernetes.io/proxy-read-timeout: "3000"
                     nginx.ingress.kubernetes.io/proxy-connect-timeout: "3000"
                     nginx.ingress.kubernetes.io/proxy-buffering: "off"
+        nginx:
+            replicas: 3
+        portal:
+            replicas: 3
+        core:
+            replicas: 3
+        jobservice:
+            replicas: 3
+        registry:
+            replicas: 3
+        trivy:
+            replicas: 3
+        exporter:
+            replicas: 3
         externalURL: https://{{ harbor_external_url }}
         ipFamily:
             ipv6:
@@ -44,6 +58,12 @@ spec:
             persistentVolumeClaim:
                 registry:
                     size: {{ harbor_registry_volume_size }}
+                    accessMode: ReadWriteMany
+                jobservice:
+                    jobLog:
+                        accessMode: ReadWriteMany
+                trivy:
+                    accessMode: ReadWriteOnce
         harborAdminPassword: "{{ harbor_admin_password }}"
         secretKey: "{{ harbor_secretkey }}"
         notary:

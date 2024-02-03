@@ -1,80 +1,148 @@
-- name: Clean previous runs of k3s-init
-  systemd:
-    name: k3s-init
-    state: stopped
-  failed_when: false
+---
+# If airgapped, all K3s artifacts are already on the node.
+- name: Download K3s install script
+  when: airgap_dir is undefined
+  ansible.builtin.get_url:
+    url: https://get.k3s.io/
+    timeout: 120
+    dest: /usr/local/bin/k3s-install.sh
+    owner: root
+    group: root
+    mode: 0755
 
-- name: Clean previous runs of k3s-init
-  command: systemctl reset-failed k3s-init
+- name: Download K3s binary
+  when: airgap_dir is undefined
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s-install.sh
+  environment:
+    INSTALL_K3S_SKIP_START: "true"
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+  changed_when: true
+
+- name: Setup optional config file
+  when: server_config_yaml is defined
+  block:
+    - name: Make config directory
+      ansible.builtin.file:
+        path: "/etc/rancher/k3s"
+        mode: 0750
+        state: directory
+    - name: Copy config values
+      ansible.builtin.copy:
+        content: "{{ server_config_yaml }}"
+        dest: "/etc/rancher/k3s/config.yaml"
+        mode: 0640
+      register: server_config_file
+
+- name: Check if kubectl is installed [server]
+  command: "/usr/local/bin/k3s kubectl get nodes"
+  register: kubectl_check
   failed_when: false
   changed_when: false
-  args:
-    warn: false
+  when: inventory_hostname in groups['server']
 
-- name: Init cluster on first control plane node
-  command:
-    cmd: "systemd-run -p RestartSec=2 \
-                      -p Restart=on-failure \
-                      --unit=k3s-init \
-                      /usr/local/bin/k3s server {{ init_args }}"
-    creates: "{{ systemd_dir }}/k3s.service"
-  when: inventory_hostname in groups['control_plane']
+- block:
+  - name: Get list of control-plane nodes and check if all control-plane nodes are up
+    block:
+    - name: Get list of nodes [server]
+      command: "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/control-plane=true' -o=jsonpath='{.items[*].metadata.name}'"
+      register: control_plane_nodes_list
+      changed_when: false
+    - name: Set control_plane_nodes variable [server]
+      set_fact:
+        control_plane_nodes: true
+      when: control_plane_nodes_list.rc == 0 and (control_plane_nodes_list.stdout.split() | length) == (groups['server'] | length)
+  - name: Set init_cluster variable to false if both etcd and control-plane nodes are up
+    set_fact:
+      init_cluster: false
+    when: control_plane_nodes is true
+  when: kubectl_check.rc == 0 and inventory_hostname in groups['server']
 
-- name: Wait for node-token
-  wait_for:
-    path: "{{ k3s_server_location }}/server/node-token"
-  when: inventory_hostname == groups['control_plane'][0]
-  tags: 
-    - cluster_update
-    - restore
-
-- name: Register node-token file access mode
-  stat:
-    path: "{{ k3s_server_location }}/server/node-token"
-  register: p
-  when: inventory_hostname == groups['control_plane'][0]
-
-- name: Change file access node-token
-  file:
-    path: "{{ k3s_server_location }}/server/node-token"
-    mode: "g+rx,o+rx"
-  when: inventory_hostname == groups['control_plane'][0]
-
-- name: Read node-token from control_plane
-  slurp:
-    path: "{{ k3s_server_location }}/server/node-token"
-  register: node_token
-  when: inventory_hostname == groups['control_plane'][0]
-  tags: 
-    - cluster_update
-    - restore
-
-- name: Store control_plane node-token
+- name: Set init_cluster to true
   set_fact:
-    token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
-  when: inventory_hostname == groups['control_plane'][0]
-  tags: 
-    - cluster_update
-    - restore
+      init_cluster: true
+  when: kubectl_check.rc != 0 and inventory_hostname in groups['server']
 
-- name: Restore node-token file access
-  file:
-    path: "{{ k3s_server_location }}/server/node-token"
-    mode: "{{ p.stat.mode }}"
-  when: inventory_hostname == groups['control_plane'][0]
+- name: Init cluster
+  when: init_cluster is true
+  block:
+  - name: Clean previous runs of k3s-init
+    systemd:
+      name: k3s-init
+      state: stopped
+    failed_when: false
 
-- name: "Wait for first control_plane node port"
-  wait_for:
-    host: "{{ hostvars[groups['control_plane'][0]].flannel_node_ip }}"
-    port: 6443
+  - name: Clean previous runs of k3s-init
+    command: systemctl reset-failed k3s-init
+    failed_when: false
+    changed_when: false
+    args:
+      warn: false
+
+  - name: Init cluster on first control plane node
+    command:
+      cmd: "systemd-run -p RestartSec=2 \
+                        -p Restart=on-failure \
+                        --unit=k3s-init \
+                        /usr/local/bin/k3s server {{ init_args }}"
+      #creates: "{{ systemd_dir }}/k3s-init.service"
+    when: inventory_hostname in groups['server']
+
+  - name: Wait for node-token
+    wait_for:
+      path: "{{ k3s_server_location }}/server/node-token"
+    when: inventory_hostname == groups['server'][0]
+    tags: 
+      - cluster_update
+      - restore
+
+  - name: Register node-token file access mode
+    stat:
+      path: "{{ k3s_server_location }}/server/node-token"
+    register: p
+    when: inventory_hostname == groups['server'][0]
+
+  - name: Change file access node-token
+    file:
+      path: "{{ k3s_server_location }}/server/node-token"
+      mode: "g+rx,o+rx"
+    when: inventory_hostname == groups['server'][0]
+
+  - name: Read node-token from server
+    slurp:
+      path: "{{ k3s_server_location }}/server/node-token"
+    register: node_token
+    when: inventory_hostname == groups['server'][0]
+    tags: 
+      - cluster_update
+      - restore
+
+  - name: Store server node-token
+    set_fact:
+      token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
+    when: inventory_hostname == groups['server'][0]
+    tags: 
+      - cluster_update
+      - restore
+
+  - name: Restore node-token file access
+    file:
+      path: "{{ k3s_server_location }}/server/node-token"
+      mode: "{{ p.stat.mode }}"
+    when: inventory_hostname == groups['server'][0]
+
+  - name: "Wait for first server node port"
+    wait_for:
+      host: "{{ hostvars[groups['server'][0]].flannel_node_ip }}"
+      port: 6443
+      delay: 10
+    when: inventory_hostname in groups['server']
+
+  - name: Verify that all server nodes actually joined
+    command:
+      cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
+    register: nodes
+    until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['server'] | length)
+    retries: "{{ retry_count | default(20) }}"
     delay: 10
-  when: inventory_hostname in groups['control_plane']
-
-- name: Verify that all control_plane nodes actually joined
-  command:
-    cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
-  register: nodes
-  until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['control_plane'] | length)
-  retries: "{{ retry_count | default(20) }}"
-  delay: 10
-  when: inventory_hostname in groups['control_plane']
+    when: inventory_hostname in groups['server']
