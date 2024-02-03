@@ -15,10 +15,6 @@ spec:
     repo: https://operator.min.io
     targetNamespace: minio-tanent-backup
     valuesContent: |-
-        secrets:
-            name: {{ minio_tenant_backup_name }}-env-configuration
-            accessKey: {{ minio_tenant_backup_access_key }} 
-            secretKey: {{ minio_tenant_backup_backup_key }}
         tenant:
             name: {{ minio_tenant_backup_name }}
             image:
@@ -63,3 +59,15 @@ spec:
                     - secretName: {{ minio_tenant_backup_console_hostname }}-cert
                       hosts:
                         - {{ minio_tenant_backup_console_hostname }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    name: {{ minio_tenant_backup_name }}-env-configuration
+    namespace: minio-tanent-backup
+type: Opaque
+stringData:
+    config.env: |
+        export MINIO_ROOT_USER={{ minio_tenant_backup_access_key }}
+        export MINIO_ROOT_PASSWORD={{ minio_tenant_backup_secret_key }}
+        export MINIO_REGION={{ minio_tenent_backup_region }}
