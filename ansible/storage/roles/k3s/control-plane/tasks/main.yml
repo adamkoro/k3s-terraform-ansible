@@ -35,9 +35,8 @@
   ansible.builtin.systemd:
     name: iscsid
     daemon_reload: true
-    state: restarted
+    state: started
     enabled: true
-  when: longhorn_requirements is changed
   tags:
     - restore
 
@@ -59,7 +58,7 @@
     daemon_reload: yes
     state: restarted
     enabled: yes
-  when: k3s_service is changed
+  when: k3s_service is changed or server_config_file is changed
   tags:
     - cluster_update
     - update_k3s
