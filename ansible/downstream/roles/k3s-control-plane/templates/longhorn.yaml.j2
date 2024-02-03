@@ -17,10 +17,13 @@ spec:
     valuesContent: |-
         persistence: 
             defaultClassReplicaCount: {{ longhorn_replica_number }}
+            recurringJobSelector:
+                enable: true
+                jobList: '[{"name":"backup-s3", "isGroup":true}]'
         defaultSettings:
             backupTarget: "{{ longhorn_backup_path }}"
-            defaultReplicaCount: {{ longhorn_replica_number }}
             backupTargetCredentialSecret: "{{ longhorn_backup_secret }}"
+            defaultReplicaCount: {{ longhorn_replica_number }}
             createDefaultDiskLabeledNodes: {{ longhorn_disk_on_labeled_node }}
         ingress:
             enabled: {{ longhorn_ingress_enabled }}
@@ -41,3 +44,19 @@ stringData:
     AWS_ACCESS_KEY_ID: "{{ longhhorn_backup_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ longhhorn_backup_secret_key_id }}" 
     AWS_ENDPOINTS: "{{ longhorn_backup_s3_endpoints }}"
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+    name: backup-s3
+    namespace: longhorn-system
+spec:
+    task: backup
+    concurrency: 4
+    cron: 0 20 * * *
+    labels:
+        backup-s3: "true"
+    groups:
+    -  backup-s3
+    name:  backup-s3
+    retain: 1

@@ -17,6 +17,9 @@ spec:
     valuesContent: |-
         persistence: 
             defaultClassReplicaCount: {{ longhorn_replica_number }}
+            recurringJobSelector:
+                enable: true
+                jobList: '[{"name":"backup-s3", "isGroup":true}]'
         defaultSettings:
             backupTarget: "{{ longhorn_backup_path }}"
             backupTargetCredentialSecret: "{{ longhorn_backup_secret }}"
@@ -51,6 +54,8 @@ spec:
     task: backup
     concurrency: 4
     cron: 0 20 * * *
+    labels:
+        backup-s3: "true"
     groups:
     -  backup-s3
     name:  backup-s3
