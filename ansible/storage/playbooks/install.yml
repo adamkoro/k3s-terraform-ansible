@@ -1,0 +1,19 @@
+- name: K3S requriements
+  hosts: k3s_cluster
+  gather_facts: true
+  become: true
+  roles:
+    - role: prereq
+    - role: airgap
+
+- name: Initialize K3S cluster
+  hosts: server
+  become: true
+  roles:
+    - role: k3s/cluster-init
+
+- name: Setup K3S server nodes
+  hosts: server
+  become: true
+  roles:
+    - role: k3s/control-plane
