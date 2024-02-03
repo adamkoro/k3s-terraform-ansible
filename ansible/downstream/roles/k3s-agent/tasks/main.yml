@@ -1,5 +1,29 @@
 ---
-- name: Setup optional config file [agent]
+- name: Check if k3s.service exists
+  ansible.builtin.stat:
+    path: /etc/systemd/system/k3s.service
+  register: service_file
+
+- name: Download K3s install script
+  when: airgap_dir is undefined and not service_file.stat.exists
+  ansible.builtin.get_url:
+    url: https://get.k3s.io/
+    timeout: 120
+    dest: /usr/local/bin/k3s-install.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Download K3s binary
+  when: airgap_dir is undefined and not service_file.stat.exists
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s-install.sh
+  environment:
+    INSTALL_K3S_SKIP_START: "true"
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+  changed_when: true
+
+- name: Setup optional config file
   when: agent_config_yaml is defined and inventory_hostname in groups['agent']
   block:
     - name: Make config directory
@@ -20,6 +44,7 @@
       - nfs-client
     state: present
     disable_recommends: false
+  register: longhorn_requirements
   tags:
     - package_install
     - restore
@@ -33,6 +58,7 @@
       - nfs-client
     state: present
     install_recommends: true
+  register: longhorn_requirements
   tags:
     - package_install
     - restore
@@ -45,6 +71,7 @@
     daemon_reload: true
     state: restarted
     enabled: true
+  when: longhorn_requirements is changed
   tags:
     - restore
     - agent-recover
@@ -56,6 +83,7 @@
     owner: root
     group: root
     mode: "0755"
+  register: k3s_service
   tags:
     - cluster_update
     - update_k3s
@@ -68,6 +96,7 @@
     daemon_reload: true
     state: restarted
     enabled: true
+  when: k3s_service is changed
   tags:
     - cluster_update
     - update_k3s
