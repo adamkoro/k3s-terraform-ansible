@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: cattle-resources-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+    name: rancher-backup-crd
+    namespace: kube-system
+spec:
+    chart: rancher-backup-crd
+    version: {{ rancher_backup_version }}
+    repo: https://charts.rancher.io
+    targetNamespace: cattle-resources-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+    name: rancher-backup
+    namespace: kube-system
+spec:
+    chart: rancher-backup
+    version: {{ rancher_backup_version }}
+    repo: https://charts.rancher.io
+    targetNamespace: cattle-resources-system
+    valuesContent: |-
+        s3:
+            enabled: true
+            credentialSecretName: rancher-backup-minio
+            credentialSecretNamespace: cattle-resources-system
+            region: {{ rancher_backup_s3_region }}
+            bucketName: {{ rancher_backup_s3_bucket }}
+            endpoint: {{ rancher_backup_s3_endpoint }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    name: rancher-backup-minio
+    namespace: cattle-resources-system
+type: Opaque
+stringData:
+    accessKey: {{ rancher_backup_s3_access_key }}
+    secretKey: {{ rancher_backup_s3_secret_keys }}
+---
+apiVersion: resources.cattle.io/v1
+kind: Backup
+metadata:
+    name: default-backup
+spec:
+    resourceSetName: rancher-resource-set
+    schedule: "@every 1h"
+    retentionCount: 10

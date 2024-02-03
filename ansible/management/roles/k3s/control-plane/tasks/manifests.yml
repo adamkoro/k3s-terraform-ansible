@@ -87,3 +87,13 @@
     mode: 0644
   tags:
     - manifests
+
+- name: Copy rancher-backup manifest to first master
+  template:
+    src: "rancher-backup.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/rancher-backup.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - manifests
