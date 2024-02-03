@@ -18,9 +18,18 @@
       - nfs-client
     state: present
     disable_recommends: false
-  tags:
-    - package_install
-    - restore
+  register: longhorn_requirements
+  when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
+
+- name: Install Longhorn requirements
+  ansible.builtin.apt:
+    name: 
+      - open-iscsi
+      - nfs-client
+    state: present
+    install_recommends: true
+  register: longhorn_requirements
+  when: ansible_facts['distribution'] == "Ubuntu"
 
 - name: Enable and start iscsid
   ansible.builtin.systemd:
@@ -28,6 +37,7 @@
     daemon_reload: true
     state: restarted
     enabled: true
+  when: longhorn_requirements is changed
   tags:
     - restore
 
@@ -49,6 +59,7 @@
     daemon_reload: yes
     state: restarted
     enabled: yes
+  when: k3s_service is changed
   tags:
     - cluster_update
     - update_k3s

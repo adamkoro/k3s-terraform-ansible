@@ -73,6 +73,11 @@
             - "{{ airgap_dir }}/k3s-airgap-images-arm64.tar"
           skip: true
 
+    - name: Check if k3s.service exists
+      ansible.builtin.stat:
+        path: /etc/systemd/system/k3s.service
+      register: service_file
+
     - name: Run K3s Install
       ansible.builtin.command:
         cmd: /usr/local/bin/k3s-install.sh
@@ -80,3 +85,4 @@
         INSTALL_K3S_SKIP_START: "true"
         INSTALL_K3S_SKIP_DOWNLOAD: "true"
       changed_when: true
+      when: not service_file.stat.exists

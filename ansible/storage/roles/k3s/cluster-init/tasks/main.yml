@@ -33,83 +33,110 @@
         dest: "/etc/rancher/k3s/config.yaml"
         mode: 0640
 
-- name: Clean previous runs of k3s-init
-  systemd:
-    name: k3s-init
-    state: stopped
-  failed_when: false
-
-- name: Clean previous runs of k3s-init
-  command: systemctl reset-failed k3s-init
-  failed_when: false
+- name: Check if kubectl is installed [server]
+  command: "/usr/local/bin/k3s kubectl version --client"
+  register: kubectl_check
+  failed_when: kubectl_check.rc != 0
   changed_when: false
-  args:
-    warn: false
-
-- name: Init cluster on first control plane node
-  command:
-    cmd: "systemd-run -p RestartSec=2 \
-                      -p Restart=on-failure \
-                      --unit=k3s-init \
-                      /usr/local/bin/k3s server {{ init_args }}"
-    #creates: "{{ systemd_dir }}/k3s-init.service"
   when: inventory_hostname in groups['server']
 
-- name: Wait for node-token
-  wait_for:
-    path: "{{ k3s_server_location }}/server/node-token"
-  when: inventory_hostname == groups['server'][0]
-  tags: 
-    - cluster_update
-    - restore
+- block:
+  - name: Get list of control-plane nodes and check if all control-plane nodes are up
+    block:
+    - name: Get list of nodes [server]
+      command: "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/control-plane=true' -o=jsonpath='{.items[*].metadata.name}'"
+      register: control_plane_nodes_list
+      changed_when: false
+    - name: Set control_plane_nodes variable [server]
+      set_fact:
+        control_plane_nodes: true
+      when: control_plane_nodes_list.rc == 0 and (control_plane_nodes_list.stdout.split() | length) == (groups['server'] | length)
+  - name: Set init_cluster variable to false if both etcd and control-plane nodes are up
+    set_fact:
+      init_cluster: false
+    when: control_plane_nodes is true
+  when: kubectl_check is succeeded and inventory_hostname in groups['server']
 
-- name: Register node-token file access mode
-  stat:
-    path: "{{ k3s_server_location }}/server/node-token"
-  register: p
-  when: inventory_hostname == groups['server'][0]
+- name: Init cluster
+  when: init_cluster is true
+  block:
+  - name: Clean previous runs of k3s-init
+    systemd:
+      name: k3s-init
+      state: stopped
+    failed_when: false
 
-- name: Change file access node-token
-  file:
-    path: "{{ k3s_server_location }}/server/node-token"
-    mode: "g+rx,o+rx"
-  when: inventory_hostname == groups['server'][0]
+  - name: Clean previous runs of k3s-init
+    command: systemctl reset-failed k3s-init
+    failed_when: false
+    changed_when: false
+    args:
+      warn: false
 
-- name: Read node-token from server
-  slurp:
-    path: "{{ k3s_server_location }}/server/node-token"
-  register: node_token
-  when: inventory_hostname == groups['server'][0]
-  tags: 
-    - cluster_update
-    - restore
+  - name: Init cluster on first control plane node
+    command:
+      cmd: "systemd-run -p RestartSec=2 \
+                        -p Restart=on-failure \
+                        --unit=k3s-init \
+                        /usr/local/bin/k3s server {{ init_args }}"
+      #creates: "{{ systemd_dir }}/k3s-init.service"
+    when: inventory_hostname in groups['server']
 
-- name: Store server node-token
-  set_fact:
-    token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
-  when: inventory_hostname == groups['server'][0]
-  tags: 
-    - cluster_update
-    - restore
+  - name: Wait for node-token
+    wait_for:
+      path: "{{ k3s_server_location }}/server/node-token"
+    when: inventory_hostname == groups['server'][0]
+    tags: 
+      - cluster_update
+      - restore
 
-- name: Restore node-token file access
-  file:
-    path: "{{ k3s_server_location }}/server/node-token"
-    mode: "{{ p.stat.mode }}"
-  when: inventory_hostname == groups['server'][0]
+  - name: Register node-token file access mode
+    stat:
+      path: "{{ k3s_server_location }}/server/node-token"
+    register: p
+    when: inventory_hostname == groups['server'][0]
 
-- name: "Wait for first server node port"
-  wait_for:
-    host: "{{ hostvars[groups['server'][0]].flannel_node_ip }}"
-    port: 6443
+  - name: Change file access node-token
+    file:
+      path: "{{ k3s_server_location }}/server/node-token"
+      mode: "g+rx,o+rx"
+    when: inventory_hostname == groups['server'][0]
+
+  - name: Read node-token from server
+    slurp:
+      path: "{{ k3s_server_location }}/server/node-token"
+    register: node_token
+    when: inventory_hostname == groups['server'][0]
+    tags: 
+      - cluster_update
+      - restore
+
+  - name: Store server node-token
+    set_fact:
+      token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
+    when: inventory_hostname == groups['server'][0]
+    tags: 
+      - cluster_update
+      - restore
+
+  - name: Restore node-token file access
+    file:
+      path: "{{ k3s_server_location }}/server/node-token"
+      mode: "{{ p.stat.mode }}"
+    when: inventory_hostname == groups['server'][0]
+
+  - name: "Wait for first server node port"
+    wait_for:
+      host: "{{ hostvars[groups['server'][0]].flannel_node_ip }}"
+      port: 6443
+      delay: 10
+    when: inventory_hostname in groups['server']
+
+  - name: Verify that all server nodes actually joined
+    command:
+      cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
+    register: nodes
+    until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['server'] | length)
+    retries: "{{ retry_count | default(20) }}"
     delay: 10
-  when: inventory_hostname in groups['server']
-
-- name: Verify that all server nodes actually joined
-  command:
-    cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
-  register: nodes
-  until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['server'] | length)
-  retries: "{{ retry_count | default(20) }}"
-  delay: 10
-  when: inventory_hostname in groups['server']
+    when: inventory_hostname in groups['server']
