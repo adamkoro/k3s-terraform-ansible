@@ -1,0 +1,65 @@
+---
+#############
+## Etcd & server init args
+#############
+etcd_init_args: >-
+  {% if groups['etcd'] | length > 1 %}
+    {% if ansible_hostname == hostvars[groups['etcd'][0]]['ansible_hostname'] %}
+      --cluster-init
+    {% else %}
+      --server https://{{ hostvars[groups['etcd'][0]].flannel_node_ip }}:6443
+    {% endif %}
+  {% endif %}
+
+server_init_args: >-
+      --server https://{{ hostvars[groups['etcd'][0]].flannel_node_ip }}:6443
+
+#############
+## K3S etcd config
+#############
+etcd_config_yaml: |
+  token:
+    - {{ k3s_token }}
+  tls-san:
+    - "{{ cluster_endpoint }}"
+  node-label:
+    - "node.kubernetes.io/etcd=true"
+  node-taint:
+    - "EtcdOnly=true:NoExecute"
+  flannel-iface: "{{ flannel_iface }}"
+  node-ip: "{{ flannel_node_ip }}"
+  disable:
+    - servicelb
+    - traefik
+    - local-storage
+  disable-apiserver: true
+  disable-controller-manager: true
+  disable-scheduler: true
+  etcd-snapshot-schedule-cron: "{{ etcd_s3_backup_schedule }}"
+  etcd-s3: true
+  etcd-snapshot-compress: {{ etcd_s3_backup_compress }}
+  etcd-s3-endpoint: {{ etcd_s3_backup_endpoint }}
+  etcd-s3-access-key: {{ etcd_s3_backup_access_key }}
+  etcd-s3-secret-key: {{ etcd_s3_backup_secret_key }}
+  etcd-s3-bucket: {{ etcd_s3_backup_bucket }}
+  etcd-s3-region: {{ etcd_s3_region }}
+
+#############
+## K3S server config
+#############
+server_config_yaml: |
+  token:
+    - {{ k3s_token }}
+  tls-san:
+    - "{{ cluster_endpoint }}"
+  node-label:
+    - "node.kubernetes.io/control-plane=true"
+  node-taint:
+    - "CriticalAddonsOnly=true:NoExecute"
+  flannel-iface: "{{ flannel_iface }}"
+  node-ip: "{{ flannel_node_ip }}"
+  disable:
+    - servicelb
+    - traefik
+    - local-storage
+  disable-etcd: true

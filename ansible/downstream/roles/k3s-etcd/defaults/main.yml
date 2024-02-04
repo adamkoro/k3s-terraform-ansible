@@ -1,0 +1,6 @@
+---
+#############
+## Runtime args
+#############
+runtime_etcd_args: >-
+  --server https://{{ cluster_endpoint }}:6443
