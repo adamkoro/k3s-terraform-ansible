@@ -1,0 +1,96 @@
+k3s_cluster:
+  children:
+    server:
+      hosts:
+        192.168.1.41:
+        192.168.1.42:
+        192.168.1.43:
+
+  vars:
+    # Ansbile settings
+    ansible_ssh_private_key_file: "~/.ssh/user"
+    ansible_port: 22
+    ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+    ansible_user: "user"
+    # K3S settings
+    k3s_version: v1.26.12+k3s1
+    k3s_token: "storage"
+    k3s_server_location: /var/lib/rancher/k3s
+    systemd_dir: "/etc/systemd/system"
+    skip_manifest_deploy: false
+    airgap_dir: /tmp/airgap_install
+
+    #############
+    ## Extra runtime args
+    #############
+    #extra_etcd_runtime_args:
+    #extra_server_runtime_args:
+    #extra_agent_runtime_args:
+
+    #############
+    ## Etcd S3 backup settings
+    #############
+    etcd_s3_backup_schedule: "0 */1 * * *"
+    etcd_s3_backup_compress: "true"
+    etcd_s3_backup_endpoint: "backup.domain.local"
+    etcd_s3_backup_access_key: "ACCESS_KEY"
+    etcd_s3_backup_secret_key: "SECRET_KEY"
+    etcd_s3_backup_bucket: "storage-etcd"
+    etcd_s3_region: "example-backup"
+
+    # Kubeconfig cluster name
+    cluster_name: "storage"
+    kconfig_cluster_name: "storage"
+
+    # Kube VIP
+    flannel_iface: "eth0"
+    kube_vip_tag_version: "v0.6.4"
+
+    cluster_endpoint: "192.168.1.40"
+    flannel_node_ip: '{{ ansible_facts[flannel_iface]["ipv4"]["address"] }}'
+
+    # Cert-manager setting
+    cert_manager_version: "v1.13.2"
+    # Cloudflare credentials for Let's encrypt certs
+    cloudflare_email: "YOUR_CLOUDFLARE_EMAIL"
+    cloudflare_api_key: "YOUR_CLOUDFLARE_API_KEY"
+
+    # Nginx ingress settings
+    nginx_ingress_version: "v4.7.5"
+
+    # Metallb settings
+    metal_lb_version: "v0.14.3"
+    metal_lb_ip_range: "192.168.1.40/32"
+
+    # Longhorn setting
+    longhorn_version: "1.5.3"
+    longhorn_ingress_enabled: "true"
+    longhorn_hostname: "longhorn-storage.domain.local"
+    longhorn_replica_number: 3
+    longhorn_disk_on_labeled_node: "true"
+    longhorn_backup_path: ""
+    longhorn_backup_secret: ""
+    longhhorn_backup_access_key_id: ""
+    longhhorn_backup_secret_key_id: ""
+    longhorn_backup_s3_endpoints: ""
+
+    # Docker cache
+    private_registry_url: "harbor.domain.local"
+    private_registry_docker_proxy_project: "docker"
+    private_registry_quay_proxy_project: "quay"
+    private_registry_username: "ROBOT_USER"
+    private_registry_password: "SECRET"
+
+    # Minio operator settings
+    minio_operator_version: "v5.0.11"
+    minio_operator_hostname: "minio-operator.domain.local"
+
+    # Minio tanent settings
+    minio_tenant_backup_version: "{{ minio_operator_version }}"
+    minio_tenant_backup_name: "backup"
+    minio_tenant_backup_pool_name: "example"
+    minio_tenant_backup_access_key: "ACCESS_KEY"
+    minio_tenant_backup_secret_key: "SECRET_KEY"
+    minio_tenant_backup_api_hostname: "backup.domain.local"
+    minio_tenant_backup_console_hostname: "backup-console.domain.local"
+    minio_tenent_backup_region: "example-backup"
