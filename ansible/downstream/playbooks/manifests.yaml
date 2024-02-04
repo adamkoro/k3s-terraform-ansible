@@ -3,5 +3,5 @@
   gather_facts: true
   become: true
   roles:
-    - role: k3s-control-plane
+    - role: k3s/control-plane
       tags: manifests
