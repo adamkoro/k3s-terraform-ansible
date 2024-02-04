@@ -10,6 +10,7 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
     onboot      = true
     scsihw      = "virtio-scsi-single"
     full_clone  = true
+    startup     = "order=0"
     bootdisk    = "scsi0"
     clone       = var.proxmox_template_name
     disks {
