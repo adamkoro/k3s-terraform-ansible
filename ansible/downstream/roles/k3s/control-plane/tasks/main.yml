@@ -138,3 +138,21 @@
   tags:
     - config_update
     - get_config
+
+- name: Install kubectl bash completion
+  shell: "/usr/local/bin/kubectl completion bash > /etc/bash_completion.d/kubectl"
+  when: inventory_hostname in groups['server']
+  tags:
+    - bash_completion
+
+- name: Install k3s bash completion
+  shell: "/usr/local/bin/k3s completion bash > /etc/bash_completion.d/k3s"
+  when: inventory_hostname in groups['server']
+  tags:
+    - bash_completion
+
+- name: Install crictl bash completion
+  shell: "/usr/local/bin/crictl completion bash > /etc/bash_completion.d/crictl"
+  when: inventory_hostname in groups['server']
+  tags:
+    - bash_completion
