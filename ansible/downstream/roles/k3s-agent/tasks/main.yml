@@ -36,6 +36,7 @@
         content: "{{ agent_config_yaml }}"
         dest: "/etc/rancher/k3s/config.yaml"
         mode: 0640
+      register: agent_config_file
 
 - name: Install Longhorn requirements
   community.general.zypper:
@@ -96,7 +97,7 @@
     daemon_reload: true
     state: restarted
     enabled: true
-  when: k3s_service is changed
+  when: k3s_service is changed or agent_config_file is changed or registry_config_file is changed 
   tags:
     - cluster_update
     - update_k3s

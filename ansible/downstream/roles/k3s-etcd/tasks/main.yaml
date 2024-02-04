@@ -23,7 +23,7 @@
     daemon_reload: true
     state: restarted
     enabled: true
-  when: k3s_service is changed or etcd_config_file is changed
+  when: k3s_service is changed or etcd_config_file is changed or registry_config_file is changed
   tags:
     - update_k3s
     - etcd-recover
