@@ -1,0 +1,97 @@
+k3s_cluster:
+  children:
+    server:
+      hosts:
+        192.168.1.16:
+        192.168.1.17:
+        192.168.1.18:
+
+  vars:
+    # Ansbile settings
+    ansible_ssh_private_key_file: "~/.ssh/user"
+    ansible_port: 22
+    ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+    ansible_user: "user"
+
+    # K3S settings
+    k3s_version: v1.26.12+k3s1
+    k3s_token: "token"
+    k3s_server_location: /var/lib/rancher/k3s
+    systemd_dir: "/etc/systemd/system"
+    skip_manifest_deploy: false
+    airgap_dir: /tmp/airgap_install
+
+    #############
+    ## Extra runtime args
+    #############
+    #extra_etcd_runtime_args:
+    #extra_server_runtime_args:
+    #extra_agent_runtime_args:
+
+    #############
+    ## Etcd S3 backup settings
+    #############
+    etcd_s3_backup_schedule: "0 */1 * * *"
+    etcd_s3_backup_compress: "true"
+    etcd_s3_backup_endpoint: "backup.domain.local"
+    etcd_s3_backup_access_key: "ACCESS_KEY"
+    etcd_s3_backup_secret_key: "SECRET_KEY"
+    etcd_s3_backup_bucket: "mgmt-etcd"
+    etcd_s3_region: "example-backup"
+
+    # Kubeconfig cluster name
+    cluster_name: "management"
+    kconfig_cluster_name: "mgmt"
+
+    # Kube VIP
+    flannel_iface: "eth0"
+    kube_vip_tag_version: "v0.6.4"
+
+    cluster_endpoint: "192.168.1.15"
+    flannel_node_ip: '{{ ansible_facts[flannel_iface]["ipv4"]["address"] }}'
+
+    # Cert-manager setting
+    cert_manager_version: "v1.13.2"
+    # Cloudflare credentials for Let's encrypt certs
+    cloudflare_email: "YOUR_CLOUDFLARE_EMAIL"
+    cloudflare_api_key: "YOUR_CLOUDFLARE_API_KEY"
+
+    # Nginx ingress settings
+    nginx_ingress_version: "v4.7.5"
+
+    # Metallb settings
+    metal_lb_version: "v0.14.3"
+    metal_lb_ip_range: "192.168.1.15/32"
+
+    # Longhorn setting
+    longhorn_version: "1.5.3"
+    longhorn_ingress_enabled: "true"
+    longhorn_hostname: "longhorn-mgmt.domain.local"
+    longhorn_replica_number: 3
+    longhorn_disk_on_labeled_node: "true"
+    longhorn_backup_path: "s3://mgmt-longhorn@example-backup/"
+    longhorn_backup_secret: "longhorn-minio-credentials"
+    longhhorn_backup_access_key_id: "ACCESS_KEY"
+    longhhorn_backup_secret_key_id: "SECRET_KEY"
+    longhorn_backup_s3_endpoints: "https://backup.domain.local/"
+
+    # Rancher settings
+    rancher_version: "2.8.1"
+    rancher_hostname: "rancher.domain.local"
+    rancher_replica_number: 3
+    rancher_password: 'RANCHER_ADMIN_PASSWORD'
+
+    # Rancher backup settings
+    rancher_backup_version: "103.0.0+up4.0.0"
+    rancher_backup_s3_endpoint: "backup.domain.local"
+    rancher_backup_s3_bucket: "mgmt-rancher"
+    rancher_backup_s3_region: "example-backup"
+    rancher_backup_s3_access_key: "ACCESS_KEY"
+    rancher_backup_s3_secret_keys: "SECRET_KEY"
+
+    # Harbor settings
+    harbor_version: "v1.13.2"
+    harbor_external_url: "harbor.domain.local"
+    harbor_registry_volume_size: 30Gi
+    harbor_admin_password: "HARBOR_ADMIN_PASSWORD"
+    harbor_secretkey: "HARBOR_SECRET_KEY"
