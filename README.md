@@ -82,3 +82,20 @@
 - Metallb
 - Minio Operator
 - Minio Tenant
+
+## Raspberry
+
+### Architecture
+
+- 1 node install
+
+- [Ansible playbook](ansible/raspberry/)
+
+### Features
+
+- Cert-manager
+- Nginx ingress controller
+- Metallb
+- ArgoCD
+- InfluxDB
+- Node-exporter
