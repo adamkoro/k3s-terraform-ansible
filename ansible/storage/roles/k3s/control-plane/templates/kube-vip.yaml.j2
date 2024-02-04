@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -32,7 +31,7 @@ spec:
         - name: port
           value: "6443"
         - name: vip_interface
-          value: {{ flannel_iface }}
+          value: "{{ flannel_iface }}"
         - name: vip_cidr
           value: "32"
         - name: cp_enable
@@ -42,9 +41,9 @@ spec:
         - name: vip_ddns
           value: "false"
         - name: svc_enable
-          value: "true"
-        - name: vip_leaderelection
           value: "false"
+        - name: vip_leaderelection
+          value: "true"
         - name: vip_leaseduration
           value: "5"
         - name: vip_renewdeadline
@@ -54,7 +53,7 @@ spec:
         - name: address
           value: {{ cluster_endpoint }}
         image: ghcr.io/kube-vip/kube-vip:{{ kube_vip_tag_version }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         name: kube-vip
         resources: {}
         securityContext:
@@ -65,6 +64,11 @@ spec:
             - SYS_TIME
       hostNetwork: true
       serviceAccountName: kube-vip
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -80,11 +84,20 @@ metadata:
   name: system:kube-vip-role
 rules:
   - apiGroups: [""]
-    resources: ["services", "services/status", "nodes", "endpoints"]
+    resources: ["services/status"]
+    verbs: ["update"]
+  - apiGroups: [""]
+    resources: ["services", "endpoints"]
     verbs: ["list","get","watch", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["list","get","watch", "update", "patch"]
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["list", "get", "watch", "update", "create"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["list","get","watch", "update"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
