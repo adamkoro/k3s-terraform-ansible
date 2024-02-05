@@ -4,4 +4,5 @@
   become: true
   serial: 1
   roles:
+    - role: airgap
     - role: k3s/upgrade
