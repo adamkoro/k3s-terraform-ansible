@@ -29,7 +29,7 @@ server_config_yaml: |
     - traefik
     - local-storage
   etcd-snapshot-schedule-cron: "{{ etcd_s3_backup_schedule }}"
-  etcd-s3: true
+  etcd-snapshot-schedule-cron: "{{ etcd_s3_backup_schedule }}"
   etcd-snapshot-compress: {{ etcd_s3_backup_compress }}
   etcd-s3-endpoint: {{ etcd_s3_backup_endpoint }}
   etcd-s3-access-key: {{ etcd_s3_backup_access_key }}

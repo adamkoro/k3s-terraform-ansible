@@ -31,6 +31,7 @@ k3s_cluster:
     #############
     ## Etcd S3 backup settings
     #############
+    etcd_s3_backup_enable: "true"
     etcd_s3_backup_schedule: "0 */1 * * *"
     etcd_s3_backup_compress: "true"
     etcd_s3_backup_endpoint: "backup.domain.local"
