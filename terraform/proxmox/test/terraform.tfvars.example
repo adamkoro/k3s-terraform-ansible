@@ -1,0 +1,38 @@
+# Number of VMs
+vm_count = 3
+# Basic VM configuration
+proxmox_vm_name       = "test"
+proxmox_template_name = "opensuse-cloud-template"
+proxmox_target_node   = "pve-1"
+# Proxmox node accessbility via ssh
+proxmox_user        = "root"
+proxmox_private_key = "~/.ssh/user"
+proxmox_host        = ""
+# Proxmox API accessbility
+proxmox_api_url          = ""
+proxmox_api_token_id     = ""
+proxmox_api_token_secret = ""
+# Proxmox storage pool
+proxmox_root_pool     = "samsung-2"
+proxmox_swap_pool     = "nvme-1"
+proxmox_rancher_pool  = "samsung-1"
+proxmox_kubelet_pool  = "nvme-1"
+proxmox_longhorn_pool = "samsung-1"
+proxmox_cloudinit_pool = "apacer-1"
+cloudinit_host_pool_path= "/mnt/pve/apacer-1"
+proxmox_root_pool_size= 30
+proxmox_swap_pool_size = 2
+proxmox_rancher_pool_size = 10
+proxmox_kubelet_pool_size = 10
+proxmox_longhorn_pool_size = 10
+# Cloud-init
+cloud_init_username    = "user"
+cloud_init_password    = ""
+cloud_init_pub_ssh_key = ""
+cloud_init_domain      = "domain.local"
+cloud_init_netmask     = "24"
+cloud_init_gateway     = "192.168.1.254"
+cloud_init_ip_pool     = "192.168.1.15" # ip address create from this pool and increase by cloud_init_ip_increase, that means first vm will get: 192.168.1.16 ip address, second vm will get: 192.168.1.17 ip address, etc...
+cloud_init_ip_increase = 1
+# Ansible
+ansbile_private_key = "~/.ssh/user"
