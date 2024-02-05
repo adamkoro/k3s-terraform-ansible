@@ -35,9 +35,9 @@
       register: server_config_file
 
 - name: Check if kubectl is installed [server]
-  command: "/usr/local/bin/k3s kubectl version --client"
+  command: "/usr/local/bin/k3s kubectl get nodes"
   register: kubectl_check
-  failed_when: kubectl_check.rc != 0
+  failed_when: false
   changed_when: false
   when: inventory_hostname in groups['server']
 
@@ -56,7 +56,12 @@
     set_fact:
       init_cluster: false
     when: control_plane_nodes is true
-  when: kubectl_check is succeeded and inventory_hostname in groups['server']
+  when: kubectl_check.rc == 0 and inventory_hostname in groups['server']
+
+- name: Set init_cluster to true
+  set_fact:
+      init_cluster: true
+  when: kubectl_check.rc != 0 and inventory_hostname in groups['server']
 
 - name: Init cluster
   when: init_cluster is true
@@ -84,7 +89,7 @@
     when: inventory_hostname in groups['server']
 
   - name: Read k3s token
-    ansible.builtin.include_tasks: ./get-token.yml
+    ansible.builtin.include_tasks: ./get_token.yml
 
   - name: "Wait for first server node port"
     wait_for:
