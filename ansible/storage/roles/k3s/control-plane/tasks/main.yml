@@ -6,7 +6,7 @@
 
 - name: Copy manifests to the first node
   include_tasks: manifests.yml
-  when: inventory_hostname == groups['server'][0] and skip_manifest_deploy is false
+  when: inventory_hostname == groups['server'][0]
   tags:
     - manifests
     - cluster_update
