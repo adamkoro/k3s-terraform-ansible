@@ -79,7 +79,7 @@
 - Cert-manager
 - Nginx ingress controller
 - Kube-vip
-- Metallb
+- Kube-vip cloud controller
 - Minio Operator
 - Minio Tenant
 
