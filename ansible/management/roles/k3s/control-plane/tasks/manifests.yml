@@ -4,7 +4,7 @@
     state: directory
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -14,7 +14,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/vip.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -24,7 +24,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/cert-manager.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -34,7 +34,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/cert-manager-issuer.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -44,7 +44,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/ingress-nginx.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -54,17 +54,27 @@
     dest: "/var/lib/rancher/k3s/server/manifests/rancher.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
-- name: Copy metallb manifest to first master
+#- name: Copy metallb manifest to first master
+#  template:
+#    src: "metallb.yaml.j2"
+#    dest: "/var/lib/rancher/k3s/server/manifests/metallb.yaml"
+#    owner: root
+#    group: root
+#    mode: 0640
+#  tags:
+#    - manifests
+
+- name: Copy kube-vip-cloud-controller manifest to first master
   template:
-    src: "metallb.yaml.j2"
-    dest: "/var/lib/rancher/k3s/server/manifests/metallb.yaml"
+    src: "kube-vip-cloud-controller.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/kube-vip-cloud-controller.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -74,7 +84,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/longhorn.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -84,7 +94,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/harbor.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
 
@@ -94,6 +104,6 @@
     dest: "/var/lib/rancher/k3s/server/manifests/rancher-backup.yaml"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
   tags:
     - manifests
