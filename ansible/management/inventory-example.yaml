@@ -46,8 +46,10 @@ k3s_cluster:
 
     # Kube VIP
     flannel_iface: "eth0"
-    kube_vip_tag_version: "v0.6.4"
-    kube_vip_cloud_controller_tag_version: "v0.0.9"
+    kube_vip_version: "0.4.4"
+    kube_vip_image_version: "v0.6.4"
+    kube_vip_cloud_controller_version: "0.2.2"
+    kube_vip_cloud_controller_image_version: "v0.0.9"
     kube_vip_ip_range: "192.168.1.15/32"
 
     cluster_endpoint: "192.168.1.15"
