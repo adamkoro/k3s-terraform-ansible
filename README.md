@@ -39,7 +39,7 @@
 - Cert-manager
 - Nginx ingress controller
 - Kube-vip
-- Metallb
+- Kube-vip cloud controller
 - Harbor
 
 ## Downstream cluster
@@ -60,7 +60,7 @@
 - Crm cluster with pacemaker and corosync for nginx loadbalancer
 - Metallb
 - Longhorn
-- Ingres-nginx
+- Nginx ingress controller
 - Cert-manager
 
 ## Storage cluster
