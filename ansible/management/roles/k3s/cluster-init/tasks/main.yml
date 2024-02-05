@@ -89,7 +89,7 @@
     when: inventory_hostname in groups['server']
 
   - name: Read k3s token
-    ansible.builtin.include_tasks: ./get-token.yml
+    ansible.builtin.include_tasks: ./get_token.yml
 
   - name: "Wait for first server node port"
     wait_for:
