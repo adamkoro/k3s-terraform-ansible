@@ -35,8 +35,9 @@ etcd_config_yaml: |
   disable-apiserver: true
   disable-controller-manager: true
   disable-scheduler: true
+  etcd-expose-metrics: {{ etcd_metrics_enable }}
   etcd-snapshot-schedule-cron: "{{ etcd_s3_backup_schedule }}"
-  etcd-s3: true
+  etcd-s3: {{ etcd_s3_backup_enable }}
   etcd-snapshot-compress: {{ etcd_s3_backup_compress }}
   etcd-s3-endpoint: {{ etcd_s3_backup_endpoint }}
   etcd-s3-access-key: {{ etcd_s3_backup_access_key }}
