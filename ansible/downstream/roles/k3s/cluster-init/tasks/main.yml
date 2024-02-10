@@ -54,39 +54,46 @@
         mode: 0640
       register: server_config_file
 
-- name: Check if kubectl is installed [server]
-  command: "/usr/local/bin/k3s kubectl version --client"
+- name: Check if kubectl is installed
+  command: "/usr/local/bin/k3s kubectl get nodes"
   register: kubectl_check
-  failed_when: kubectl_check.rc != 0
+  failed_when: false
   changed_when: false
-  when: inventory_hostname in groups['server']
+  when: inventory_hostname in groups['k3s_cluster_init']
 
 - block:
-  - name: Get list of etcd nodes and check if all etcd nodes are up
+  - name: Get list of control-plane nodes and check if all control-plane nodes are up
+    when: (kubectl_check.rc | default('') == 0) and inventory_hostname in groups['server']
     block:
-    - name: Get list of nodes [etcd]
+    - name: Get list of etcd nodes
       command: "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/etcd=true' -o=jsonpath='{.items[*].metadata.name}'"
       register: etcd_nodes_list
       changed_when: false
-    - name: Set etcd_nodes variable [etcd]
+
+    - name: Set etcd_nodes_list variable
       set_fact:
         etcd_nodes: true
-      when: etcd_nodes_list.rc == 0 and (etcd_nodes_list.stdout.split() | length) == (groups['etcd'] | length)
-  - name: Get list of control-plane nodes and check if all control-plane nodes are up
-    block:
-    - name: Get list of nodes [server]
+      when: etcd_nodes_list is succeeded and (etcd_nodes_list.stdout.split() | length) == (groups['etcd'] | length)
+  
+    - name: Get list of control-plane nodes
       command: "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/control-plane=true' -o=jsonpath='{.items[*].metadata.name}'"
       register: control_plane_nodes_list
       changed_when: false
-    - name: Set control_plane_nodes variable [server]
+  
+    - name: Set control_plane_nodes variable
       set_fact:
         control_plane_nodes: true
-      when: control_plane_nodes_list.rc == 0 and (control_plane_nodes_list.stdout.split() | length) == (groups['server'] | length)
+      when: control_plane_nodes_list is succeeded and (control_plane_nodes_list.stdout.split() | length) == (groups['server'] | length)
+
   - name: Set init_cluster variable to false if both etcd and control-plane nodes are up
     set_fact:
       init_cluster: false
-    when: etcd_nodes is true and control_plane_nodes is true
-  when: kubectl_check is succeeded and inventory_hostname in groups['server']
+    when: control_plane_nodes is true and etcd_nodes is true
+
+- name: Set init_cluster to true
+  set_fact:
+      init_cluster: true
+  when: (kubectl_check.rc | default('') != 0) and inventory_hostname in groups['k3s_cluster_init']
 
 - name: Init cluster
   when: init_cluster is true
@@ -100,6 +107,7 @@
   - name: Reset the failed state of the k3s-init
     ansible.builtin.command:
       cmd: systemctl reset-failed k3s-init
+    failed_when: false
 
   - name: Init cluster on etcd nodes
     ansible.builtin.command:
@@ -110,7 +118,7 @@
     when: inventory_hostname in groups['etcd']
 
   - name: Read k3s token
-    ansible.builtin.include_tasks: ./get-token.yml
+    ansible.builtin.include_tasks: ./get_token.yml
 
   - name: "Wait for first etcd node port"
     ansible.builtin.wait_for:
