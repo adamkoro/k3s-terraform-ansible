@@ -2,10 +2,10 @@ resource "proxmox_vm_qemu" "agent" {
     count       = var.vm_count
     target_node = var.proxmox_target_node
     name        = "${var.proxmox_vm_name}-agent-${count.index + 1}"
-    cores       = 4
+    cores       = 8
     sockets     = 1
-    cpu         = "kvm64"
-    memory      = 8192
+    cpu         = "host"
+    memory      = 16384
     agent       = 1
     onboot      = true
     scsihw      = "virtio-scsi-single"
