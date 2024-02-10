@@ -28,6 +28,15 @@
   tags:
     - manifests
 
+- name: Copy ingress-nginx manifest to first master
+  template:
+    src: "ingress-nginx.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/ingress-nginx.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  tags:
+    - manifests
 
 - name: Copy cert-manager manifest to first master
   template:
@@ -45,18 +54,6 @@
   template:
     src: "cert-manager-issuer.yaml.j2"
     dest: "/var/lib/rancher/k3s/server/manifests/cert-manager-issuer.yaml"
-    owner: root
-    group: root
-    mode: 0640
-  when:
-    - skip_manifest_deploy is false
-  tags:
-    - manifests
-
-- name: Copy ingress-nginx manifest to first master
-  template:
-    src: "ingress-nginx.yaml.j2"
-    dest: "/var/lib/rancher/k3s/server/manifests/ingress-nginx.yaml"
     owner: root
     group: root
     mode: 0640
