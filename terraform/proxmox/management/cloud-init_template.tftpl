@@ -29,7 +29,7 @@ resolv_conf:
 write_files:
   - path: /etc/sysctl.d/99-swappiness.conf
     content: |
-      vm.swappiness=5
+      vm.swappiness=1
   # For Ubuntu
   #- path: /usr/local/share/ca-certificates/adamkoro.local.crt
   # For Suse
