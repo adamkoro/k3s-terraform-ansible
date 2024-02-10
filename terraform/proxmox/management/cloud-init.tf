@@ -5,7 +5,7 @@ data "template_file" "cloud_init_management_template" {
     ssh_key  = var.cloud_init_pub_ssh_key
     username = var.cloud_init_username
     password = var.cloud_init_password
-    hostname = "${var.proxmox_vm_name}-${count.index + 1}"
+    hostname = "${var.proxmox_vm_name}-cp-${count.index + 1}"
     domain   = var.cloud_init_domain
   }
 }

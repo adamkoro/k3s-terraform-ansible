@@ -128,21 +128,24 @@
       ansible.builtin.command: mount -a
       changed_when: false
 
-    - name: Remove the wrong kernel-default-base package
-      community.general.zypper:
-        name: kernel-default-base
-        state: absent
-
-    - name: Install kernel-default package
-      community.general.zypper:
-        name: kernel-default
-        state: present
-      notify:
-        - Reboot
-
-  handlers:
-    - name: Reboot
-      ansible.builtin.reboot:
-        reboot_timeout: 300
-        msg: "Reboot initiated by Ansible for kernel update"
-      listen: Reboot
+#    - name: Remove the wrong kernel-default-base package
+#      community.general.zypper:
+#        name: kernel-default-base
+#        state: absent
+#      register: remove_wrong_kernel
+#
+#    - name: Install kernel-default package
+#      community.general.zypper:
+#        name: kernel-default
+#        state: present
+#      when:
+#        - remove_wrong_kernel is changed
+#      notify:
+#        - Reboot
+#
+#  handlers:
+#    - name: Reboot
+#      ansible.builtin.reboot:
+#        reboot_timeout: 300
+#        msg: "Reboot initiated by Ansible for kernel update"
+#      listen: Reboot

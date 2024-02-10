@@ -4,8 +4,8 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
     name        = "${var.proxmox_vm_name}-cp-${count.index + 1}"
     cores       = 4
     sockets     = 1
-    cpu         = "kvm64"
-    memory      = 4096
+    cpu         = "host"
+    memory      = 6144
     agent       = 1
     onboot      = true
     scsihw      = "virtio-scsi-single"

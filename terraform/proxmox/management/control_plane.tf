@@ -4,7 +4,7 @@ resource "proxmox_vm_qemu" "management_control_plane" {
     name        = "${var.proxmox_vm_name}-cp-${count.index + 1}"
     cores       = 4
     sockets     = 1
-    cpu         = "kvm64"
+    cpu         = "host"
     memory      = 8192
     agent       = 1
     onboot      = true

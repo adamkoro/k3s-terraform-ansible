@@ -2,10 +2,10 @@ resource "proxmox_vm_qemu" "test_control_plane" {
     count       = var.vm_count
     target_node = var.proxmox_target_node
     name        = "${var.proxmox_vm_name}-cp-${count.index + 1}"
-    cores       = 2
+    cores       = 4
     sockets     = 1
-    cpu         = "kvm64"
-    memory      = 2048
+    cpu         = "host"
+    memory      = 4096
     agent       = 1
     onboot      = true
     scsihw      = "virtio-scsi-single"

@@ -4,7 +4,7 @@ resource "proxmox_vm_qemu" "etcd" {
     name        = "${var.proxmox_vm_name}-etcd-${count.index + 1}"
     cores       = 2
     sockets     = 1
-    cpu         = "kvm64"
+    cpu         = "host"
     memory      = 2048
     agent       = 1
     onboot      = true
