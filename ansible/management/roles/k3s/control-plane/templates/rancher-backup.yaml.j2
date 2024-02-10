@@ -50,5 +50,5 @@ metadata:
     name: default-backup
 spec:
     resourceSetName: rancher-resource-set
-    schedule: "0 */1 * * *"
-    retentionCount: 10
+    schedule: {{ rancher_backup_schedule }}
+    retentionCount: {{ rancher_backup_retetion }}
