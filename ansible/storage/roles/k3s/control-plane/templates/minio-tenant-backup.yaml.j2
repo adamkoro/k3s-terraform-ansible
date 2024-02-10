@@ -18,7 +18,7 @@ spec:
         tenant:
             name: {{ minio_tenant_backup_name }}
             image:
-                tag: RELEASE.2024-01-29T03-56-32Z-cpuv1
+                tag: {{ minio_tanent_image_tag }}
             configuration:
                 name: {{ minio_tenant_backup_name }}-env-configuration
             pools:
