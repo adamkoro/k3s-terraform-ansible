@@ -1,53 +1,48 @@
 ---
-- name: Disable services
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    state: stopped
-    enabled: false
-  failed_when: false
-  with_items:
-    - k3s
-  tags:
-    - remove_all
+- name: Run K3s Uninstall script
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s-uninstall.sh
+    removes: /var/lib/rancher/k3s/*
+  when: "'server' in group_names"
 
-- name: Pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
-  register: pkill_containerd_shim_runc
-  ansible.builtin.command: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
-  changed_when: "pkill_containerd_shim_runc.rc == 0"
-  failed_when: false
-  tags:
-    - remove_all
+- name: Remove user kubeconfig
+  ansible.builtin.file:
+    path: ~{{ ansible_user }}/.kube/config
+    state: absent
 
-- name: Umount k3s filesystems
-  ansible.builtin.include_tasks: umount_with_children.yml
-  with_items:
-    - /run/k3s
-    - /var/lib/kubelet
-    - /run/netns
-    - /var/lib/rancher/k3s
-  loop_control:
-    loop_var: mounted_fs
-  tags:
-    - remove_all
+- name: Remove k3s install script
+  ansible.builtin.file:
+    path: /usr/local/bin/k3s-install.sh
+    state: absent
 
-- name: Remove service files, binaries and data
+- name: Remove service files, binaries and data if something exists after k3s-uninstall.sh
   ansible.builtin.file:
     name: "{{ item }}"
     state: absent
   with_items:
-    - /usr/local/bin/k3s
-    - "{{ systemd_dir }}/k3s.service"
-    - "{{ systemd_dir }}/k3s-init.service"
-    - /etc/rancher/k3s
+    - /etc/rancher
     - /var/lib/kubelet/*
-    - /var/lib/rancher/k3s
+    - /var/lib/rancher/*
     - /var/lib/longhorn/*
-  tags:
-    - remove_all
 
-- name: Daemon_reload
+- name: Remove Longhorn requirements
+  community.general.zypper:
+    name: 
+      - open-iscsi
+      - nfs-client
+    state: absent
+    disable_recommends: false
+  when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
+
+- name: Remove Longhorn requirements
+  ansible.builtin.apt:
+    name: 
+      - open-iscsi
+      - nfs-client
+    state: absent
+    install_recommends: true
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Systemctl daemon reload
   ansible.builtin.systemd:
-    daemon_reload: true
-  tags:
-    - remove_all
-  notify: Reboot
+    daemon_reload: yes
