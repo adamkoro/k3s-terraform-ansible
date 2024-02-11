@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: monitoring
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+    name: grafana
+    namespace: kube-system
+spec:
+    chart: grafana
+    version: {{ grafana_version }}
+    repo: https://grafana.github.io/helm-charts
+    targetNamespace: monitoring
+    valuesContent: |-
+        image:
+            tag: {{ grafana_image_tag_version }}
+        ingress:
+            enabled: true
+            annotations:
+                kubernetes.io/ingress.class: "nginx"
+                cert-manager.io/cluster-issuer: "letsencrypt-production"
+            hosts:
+                - {{ grafana_hostname }}
+            tls:
+                - secretName: grafana-https
+                  hosts:
+                    - {{ grafana_hostname }}
+        persistence:
+            enabled: true
+            size: 10Gi
+        adminUser: {{ grafana_admin }}
+        adminPassword: {{ grafana_admin_password }}
+        deploymentStrategy:
+            type: Recreate
+        testFramework:
+            enabled: false

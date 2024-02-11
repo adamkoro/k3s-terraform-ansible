@@ -52,25 +52,17 @@
   tags:
     - manifests
 
-#- name: Copy logging manifest to first master
-#  template:
-#    src: "logging.yaml.j2"
-#    dest: "/var/lib/rancher/k3s/server/manifests/harbor.yaml"
-#    owner: root
-#    group: root
-#    mode: 0644
-#  tags:
-#    - manifests
-
-#- name: Copy rosettak8s manifest to first master
-#  template:
-#    src: "rosettak8s.yaml.j2"
-#    dest: "/var/lib/rancher/k3s/server/manifests/rosettak8s.yaml"
-#    owner: root
-#    group: root
-#    mode: 0644
-#  tags:
-#    - manifests
+- name: Copy grafana manifest to first master
+  template:
+    src: "grafana.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/grafana.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  when:
+    - skip_manifest_deploy is false
+  tags:
+    - manifests
 
 - name: Copy longhorn manifest to first master
   template:
