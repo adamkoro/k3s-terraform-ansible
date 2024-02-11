@@ -1,0 +1,17 @@
+- name: Install prerequiements
+  hosts: server
+  become: true
+  roles:
+    - role: prereq
+
+- name: K3s cluster init
+  hosts: server
+  become: true
+  roles:
+    - role: k3s/cluster-init
+
+- name: K3s cluster install
+  hosts: server
+  become: true
+  roles:
+    - role: k3s/control-plane
