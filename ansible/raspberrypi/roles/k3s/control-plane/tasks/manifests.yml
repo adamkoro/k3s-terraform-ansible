@@ -64,6 +64,18 @@
   tags:
     - manifests
 
+- name: Copy prometheus manifest to first master
+  template:
+    src: "prometheus.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/prometheus.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  when:
+    - skip_manifest_deploy is false
+  tags:
+    - manifests
+
 - name: Copy longhorn manifest to first master
   template:
     src: "longhorn.yaml.j2"
