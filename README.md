@@ -98,4 +98,4 @@
 - Metallb
 - ArgoCD
 - InfluxDB
-- Node-exporter
+- Longhorn
