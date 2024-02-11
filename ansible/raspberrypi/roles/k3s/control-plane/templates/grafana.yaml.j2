@@ -37,3 +37,17 @@ spec:
             type: Recreate
         testFramework:
             enabled: false
+        sidecar:
+            dashboards:
+                enabled: false
+            datasources:
+                enabled: true
+        datasources:
+            datasources.yaml:
+                apiVersion: 1
+                datasources:
+                - name: Prometheus
+                  type: prometheus
+                  url: http://prometheus-server
+                  access: proxy
+                  isDefault: true
