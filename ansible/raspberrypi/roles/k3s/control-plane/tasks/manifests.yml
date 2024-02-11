@@ -1,0 +1,119 @@
+- name: Create manifests directory on first master
+  file:
+    path: /var/lib/rancher/k3s/server/manifests
+    state: directory
+    owner: root
+    group: root
+    mode: 0640
+  tags:
+    - manifests
+
+- name: Copy cert-manager manifest to first master
+  template:
+    src: "cert-manager.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/cert-manager.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  when:
+    - skip_manifest_deploy is false
+  tags:
+    - manifests
+
+- name: Copy cert-manager issuer manifest to first master
+  template:
+    src: "cert-manager-issuer.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/cert-manager-issuer.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  when:
+    - skip_manifest_deploy is false
+  tags:
+    - manifests
+
+- name: Copy ingress-nginx manifest to first master
+  template:
+    src: "ingress-nginx.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/ingress-nginx.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  tags:
+    - manifests
+
+- name: Copy metallb manifest to first master
+  template:
+    src: "metallb.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/metallb.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  tags:
+    - manifests
+
+#- name: Copy logging manifest to first master
+#  template:
+#    src: "logging.yaml.j2"
+#    dest: "/var/lib/rancher/k3s/server/manifests/harbor.yaml"
+#    owner: root
+#    group: root
+#    mode: 0644
+#  tags:
+#    - manifests
+
+#- name: Copy rosettak8s manifest to first master
+#  template:
+#    src: "rosettak8s.yaml.j2"
+#    dest: "/var/lib/rancher/k3s/server/manifests/rosettak8s.yaml"
+#    owner: root
+#    group: root
+#    mode: 0644
+#  tags:
+#    - manifests
+
+- name: Copy longhorn manifest to first master
+  template:
+    src: "longhorn.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/longhorn.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  when:
+    - skip_manifest_deploy is false
+  tags:
+    - manifests
+
+- name: Copy argocd manifest to first master
+  template:
+    src: "argocd.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/argocd.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  when:
+    - skip_manifest_deploy is false
+  tags:
+    - manifests
+
+- name: Copy influxdb manifest to first master
+  template:
+    src: "influxdb.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/influxdb.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  when:
+    - skip_manifest_deploy is false
+  tags:
+    - manifests
+
+#- name: Copy node-exporter manifest to first master
+#  template:
+#    src: "node-exporter.yaml.j2"
+#    dest: "/var/lib/rancher/k3s/server/manifests/node-exporter.yaml"
+#    owner: root
+#    group: root
+#    mode: 0640
+#  tags:
+#    - manifests
