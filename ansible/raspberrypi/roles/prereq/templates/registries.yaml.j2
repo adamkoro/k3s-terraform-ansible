@@ -1,0 +1,18 @@
+mirrors:
+    docker.io:
+        endpoint:
+            - "https://{{ private_registry_url }}/v2/{{ private_registry_docker_proxy_project }}"
+    quay.io:
+        endpoint:
+            - "https://{{ private_registry_url }}/v2/{{ private_registry_quay_proxy_project }}"
+    registry.k8s.io:
+        endpoint:
+            - "https://{{ private_registry_url }}/v2/{{ private_registry_registry_k8s_proxy_project }}"
+    "{{ private_registry_url }}":
+        endpoint:
+            - "https://{{ private_registry_url }}"
+configs:
+    "{{ private_registry_url }}":
+        auth:
+            username: "{{ private_registry_username }}"
+            password: "{{ private_registry_password }}"

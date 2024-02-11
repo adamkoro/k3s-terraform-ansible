@@ -1,16 +1,24 @@
-- name: Install required packages for Ubuntu
-  apt:
-    name: 
-      - linux-modules-extra-raspi
-      - open-iscsi
-      - nfs-common
-    state: present
-  when: ansible_distribution == 'Ubuntu'
+---
+- name: Create k3s config directory
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+  tags:
+    - private_registry
+    - agent-recover
 
-- name: Install required packages for Debian
-  apt:
-    name: 
-      - open-iscsi
-      - nfs-common
-    state: present
-  when: ansible_distribution == 'Debian'
+- name: Setup private registry
+  ansible.builtin.template:
+    src: "registries.yaml.j2"
+    dest: "/etc/rancher/k3s/registries.yaml"
+    owner: root
+    group: root
+    mode: "0640"
+  when: inventory_hostname in groups['k3s_cluster']
+  register: registry_config_file
+  tags:
+    - private_registry
+    - agent-recover
