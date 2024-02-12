@@ -1,0 +1,36 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: cattle-logging-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+    name: rancher-logging-crd
+    namespace: kube-system
+spec:
+    chart: rancher-logging-crd
+    version: {{ rancher_logging_version }}
+    repo: https://charts.rancher.io
+    targetNamespace: cattle-logging-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+    name: rancher-logging
+    namespace: kube-system
+spec:
+    chart: rancher-logging
+    version: {{ rancher_logging_version }}
+    repo: https://charts.rancher.io
+    targetNamespace: cattle-logging-system
+    valuesContent: |-
+        additionalLoggingSources:
+            k3s:
+                enabled: true
+                container_engine: "systemd"
+                stripUnderscores: false
+        monitoring:
+            serviceMonitor:
+                enabled: false
