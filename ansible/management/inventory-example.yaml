@@ -84,11 +84,16 @@ k3s_cluster:
 
     # Rancher backup settings
     rancher_backup_version: "103.0.0+up4.0.0"
+    rancher_backup_schedule: "0 */4 * * *"
+    rancher_backup_retetion: "10"
     rancher_backup_s3_endpoint: "backup.domain.local"
     rancher_backup_s3_bucket: "mgmt-rancher"
     rancher_backup_s3_region: "example-backup"
     rancher_backup_s3_access_key: "ACCESS_KEY"
     rancher_backup_s3_secret_keys: "SECRET_KEY"
+
+    # Rancher logging settings
+    rancher_logging_version: "103.0.0+up3.17.10"
 
     # Harbor settings
     harbor_version: "v1.13.2"
