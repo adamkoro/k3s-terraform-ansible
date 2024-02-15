@@ -58,3 +58,15 @@
     mode: "0644"
   tags:
     - manifests
+
+- name: Copy rancher-logging manifest to first master
+  template:
+    src: "rancher-logging.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/rancher-logging.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  when:
+    - skip_manifest_deploy is false
+  tags:
+    - manifests
