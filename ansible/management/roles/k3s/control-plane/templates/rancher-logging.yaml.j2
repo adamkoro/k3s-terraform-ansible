@@ -30,7 +30,9 @@ spec:
             k3s:
                 enabled: true
                 container_engine: "systemd"
-                stripUnderscores: false
+                stripUnderscores: true
         monitoring:
             serviceMonitor:
                 enabled: false
+        disablePvc: false
+        systemdLogPath: "/run/log/journal"
