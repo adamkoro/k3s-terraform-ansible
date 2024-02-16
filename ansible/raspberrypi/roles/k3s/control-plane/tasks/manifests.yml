@@ -52,18 +52,6 @@
   tags:
     - manifests
 
-- name: Copy grafana manifest to first master
-  template:
-    src: "grafana.yaml.j2"
-    dest: "/var/lib/rancher/k3s/server/manifests/grafana.yaml"
-    owner: root
-    group: root
-    mode: 0640
-  when:
-    - skip_manifest_deploy is false
-  tags:
-    - manifests
-
 - name: Copy prometheus manifest to first master
   template:
     src: "prometheus.yaml.j2"
@@ -99,25 +87,3 @@
     - skip_manifest_deploy is false
   tags:
     - manifests
-
-- name: Copy influxdb manifest to first master
-  template:
-    src: "influxdb.yaml.j2"
-    dest: "/var/lib/rancher/k3s/server/manifests/influxdb.yaml"
-    owner: root
-    group: root
-    mode: 0640
-  when:
-    - skip_manifest_deploy is false
-  tags:
-    - manifests
-
-#- name: Copy node-exporter manifest to first master
-#  template:
-#    src: "node-exporter.yaml.j2"
-#    dest: "/var/lib/rancher/k3s/server/manifests/node-exporter.yaml"
-#    owner: root
-#    group: root
-#    mode: 0640
-#  tags:
-#    - manifests
