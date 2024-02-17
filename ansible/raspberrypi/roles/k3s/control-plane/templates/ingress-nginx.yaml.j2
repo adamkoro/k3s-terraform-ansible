@@ -12,11 +12,14 @@ spec:
     valuesContent: |-
         controller:
           kind: DaemonSet
-          hostNetwork: true
+          hostNetwork: false
           hostPort:
             enabled: false
           service:
             enabled: true
+            nodePorts:
+              tcp:
+                22: ""
           publishService:
             enabled: true
           metrics:
@@ -27,3 +30,6 @@ spec:
             use-forwarded-headers: "true"
           ingressClassResource:
             default: true
+        tcp:
+          22: "gogs/gogs-headless-service:22"
+        portNamePrefix: custom
