@@ -121,3 +121,15 @@
     - skip_manifest_deploy is false
   tags:
     - manifests
+
+- name: Copy argocd manifest to first master
+  template:
+    src: "argocd.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/argocd.yaml"
+    owner: root
+    group: root
+    mode: 0640
+  when:
+    - skip_manifest_deploy is false
+  tags:
+    - manifests
