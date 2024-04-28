@@ -129,16 +129,6 @@
   tags:
     - restore
 
-- name: Copy kubeconfig from first remote master
-  ansible.builtin.fetch:
-    src: "~{{ ansible_user }}/.kube/config"
-    dest: "~/.kube/config.{{ kconfig_cluster_name }}"
-    flat: true
-  when: inventory_hostname == groups['server'][0]
-  tags:
-    - config_update
-    - get_config
-
 - name: Install kubectl bash completion
   shell: "/usr/local/bin/kubectl completion bash > /etc/bash_completion.d/kubectl"
   when: inventory_hostname in groups['server']
