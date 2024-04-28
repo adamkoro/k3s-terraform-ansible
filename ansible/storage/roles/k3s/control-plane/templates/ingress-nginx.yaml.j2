@@ -12,13 +12,17 @@ spec:
     valuesContent: |-
         controller:
           kind: DaemonSet
-          hostNetwork: true
+          hostNetwork: false
           nodeSelector:
             node.kubernetes.io/control-plane: "true"
           hostPort:
             enabled: false
           service:
             enabled: true
+            annotations:
+              - metallb.universe.tf/address-pool: {{ nginx_metallb_address_pool }}
+            externalIPs:
+              - {{ cluster_endpoint }}
           publishService:
             enabled: true
           metrics:

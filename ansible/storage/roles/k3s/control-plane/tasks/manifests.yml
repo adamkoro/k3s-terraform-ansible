@@ -18,10 +18,10 @@
   tags:
     - manifests
 
-- name: Copy kube-vip-cloud-controller manifest to first master
+- name: Copy metallb manifest to first master
   template:
-    src: "kube-vip-cloud-controller.yaml.j2"
-    dest: "/var/lib/rancher/k3s/server/manifests/kube-vip-cloud-controller.yaml"
+    src: "metallb.yaml.j2"
+    dest: "/var/lib/rancher/k3s/server/manifests/metallb.yaml"
     owner: root
     group: root
     mode: 0640
