@@ -32,11 +32,27 @@ variable "cloud_init_netmask" {
   type        = string
   description = "Netmask for cloud-init"
 }
-variable "cloud_init_gateway" {
+variable "cloud_init_gateway1" {
   type        = string
   description = "Gateway for cloud-init"
 }
-variable "cloud_init_ip_pool" {
+variable "cloud_init_ip_pool1" {
+  type        = string
+  description = "IP pool for cloud-init"
+}
+variable "cloud_init_gateway2" {
+  type        = string
+  description = "Gateway for cloud-init"
+}
+variable "cloud_init_ip_pool2" {
+  type        = string
+  description = "IP pool for cloud-init"
+}
+variable "cloud_init_gateway0" {
+  type        = string
+  description = "Gateway for cloud-init"
+}
+variable "cloud_init_ip_pool0" {
   type        = string
   description = "IP pool for cloud-init"
 }
