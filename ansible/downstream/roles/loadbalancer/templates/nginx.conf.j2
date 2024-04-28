@@ -12,7 +12,7 @@ stream {
     #########
     upstream kube_api_etcd_nodes {
     {% for host in groups['etcd'] %}
-        server {{ hostvars[host]['ansible_default_ipv4']['address'] }}:6443 max_fails=3 fail_timeout=5s;
+        server {{ hostvars[host]["ansible_facts"][flannel_iface]["ipv4"]["address"] }}:6443 max_fails=3 fail_timeout=5s;
     {% endfor %}
     }
 
@@ -26,7 +26,7 @@ stream {
     #########
     upstream kube_api_control-plane_nodes {
     {% for host in groups['server'] %}
-        server {{ hostvars[host]['ansible_default_ipv4']['address'] }}:6443 max_fails=3 fail_timeout=5s;
+        server {{ hostvars[host]["ansible_facts"][flannel_iface]["ipv4"]["address"] }}:6443 max_fails=3 fail_timeout=5s;
     {% endfor %}
     }
 
@@ -40,7 +40,7 @@ stream {
     #########
     upstream kube_http {
     {% for host in groups['server'] %}
-        server {{ hostvars[host]['ansible_default_ipv4']['address'] }}:80 max_fails=3 fail_timeout=5s;
+        server {{ hostvars[host]["ansible_facts"][flannel_iface]["ipv4"]["address"] }}:80 max_fails=3 fail_timeout=5s;
     {% endfor %}
     }
 
@@ -54,7 +54,7 @@ stream {
     #########
     upstream kube_https {
     {% for host in groups['server'] %}
-        server {{ hostvars[host]['ansible_default_ipv4']['address'] }}:443 max_fails=3 fail_timeout=5s;
+        server {{ hostvars[host]["ansible_facts"][flannel_iface]["ipv4"]["address"] }}:443 max_fails=3 fail_timeout=5s;
     {% endfor %}
     }
 

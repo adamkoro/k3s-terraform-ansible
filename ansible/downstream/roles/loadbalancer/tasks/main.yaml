@@ -99,8 +99,15 @@
   tags:
     - restore
 
-- name: Setup virtual ip for cluster
-  ansible.builtin.command: crm configure primitive virtual_ip ocf:heartbeat:IPaddr2 params ip="{{ cluster_endpoint }}" cidr_netmask="32" op monitor interval="10s" meta migration-threshold="10"
+- name: Setup virtual ip1 for cluster
+  ansible.builtin.command: crm configure primitive virtual_ip1 ocf:heartbeat:IPaddr2 params ip="{{ cluster_endpoint }}" cidr_netmask="32" op monitor interval="10s" meta migration-threshold="10"
+  when: inventory_hostname == groups['loadbalancer'][0]
+  changed_when: true
+  tags:
+    - restore
+
+- name: Setup virtual ip2 for cluster
+  ansible.builtin.command: crm configure primitive virtual_ip2 ocf:heartbeat:IPaddr2 params ip="192.168.2.20" cidr_netmask="32" op monitor interval="10s" meta migration-threshold="10"
   when: inventory_hostname == groups['loadbalancer'][0]
   changed_when: true
   tags:
@@ -124,7 +131,7 @@
   ansible.builtin.wait_for:
     host: "{{ cluster_endpoint }}"
     port: 6444
-    delay: 1
+    delay: 30
     connect_timeout: 10
     timeout: 30
   tags:
