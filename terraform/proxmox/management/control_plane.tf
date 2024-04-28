@@ -2,7 +2,7 @@ resource "proxmox_vm_qemu" "management_control_plane" {
     count       = var.vm_count
     target_node = var.proxmox_target_node
     name        = "${var.proxmox_vm_name}-cp-${count.index + 1}"
-    cores       = 4
+    cores       = 6
     sockets     = 1
     cpu         = "host"
     memory      = 8192
