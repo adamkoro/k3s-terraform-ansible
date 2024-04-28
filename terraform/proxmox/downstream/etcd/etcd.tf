@@ -74,7 +74,7 @@ disks {
     ipconfig0 = "ip=${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway0}"
     ipconfig1 = "ip=${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway1}"
     ipconfig2 = "ip=${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}"
-    cicustom = "user=${var.proxmox_cloudinit_pool}:snippets/cloud_init_${var.proxmox_vm_name}-proxy-${count.index + 1}.yml"
+    cicustom = "user=${var.proxmox_cloudinit_pool}:snippets/cloud_init_${var.proxmox_vm_name}-etcd-${count.index + 1}.yml"
     # Check if vm ssh port is open
     provisioner "local-exec" {
         command = "while ! nc -q0 ${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
