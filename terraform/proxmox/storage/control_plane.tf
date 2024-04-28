@@ -69,16 +69,26 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
         bridge = "vmbr0"
         model  = "virtio"
     }
+    network {
+        bridge = "vmbr1"
+        model  = "virtio"
+    }
+    network {
+        bridge = "storage"
+        model  = "virtio"
+    }
     os_type = "cloud-init"
     cloudinit_cdrom_storage = "${var.proxmox_cloudinit_pool}"
-    ipconfig0 = "ip=${var.cloud_init_ip_pool}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway}"
+    ipconfig0 = "ip=${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway0}"
+    ipconfig1 = "ip=${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway1}"
+    ipconfig2 = "ip=${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}"
     cicustom = "user=${var.proxmox_cloudinit_pool}:snippets/cloud_init_${var.proxmox_vm_name}-${count.index+1}.yml"
 
     provisioner "local-exec" {
-        command = "while ! nc -q0 ${var.cloud_init_ip_pool}${count.index + var.cloud_init_ip_increase} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
+        command = "while ! nc -q0 ${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
     }
 
     provisioner "local-exec" {
-        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook control_plane_setup.yaml -i '${var.cloud_init_ip_pool}${count.index + var.cloud_init_ip_increase},' --private-key ${var.ansbile_private_key} -e ansible_user=${var.cloud_init_username}"
+        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook control_plane_setup.yaml -i '${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase},' --private-key ${var.ansbile_private_key} -e ansible_user=${var.cloud_init_username}"
     }
 }

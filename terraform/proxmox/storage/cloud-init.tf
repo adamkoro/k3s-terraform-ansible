@@ -27,6 +27,6 @@ resource "null_resource" "cloud_init_management" {
 
   provisioner "file" {
     source      = element(local_file.cloud_init_management_local.*.filename, count.index)
-    destination = "${var.cloudinit_host_pool_path}/snippets/cloud_init_${var.proxmox_vm_name}-${count.index+1}.yml"
+    destination = "${var.cloudinit_host_pool_path}/snippets/cloud_init_${var.proxmox_vm_name}-cp-${count.index+1}.yml"
   }
 }

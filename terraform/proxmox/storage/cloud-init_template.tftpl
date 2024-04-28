@@ -18,7 +18,7 @@ fqdn: ${hostname}.${domain}
 manage_etc_hosts: true
 manage_resolv_conf: true
 resolv_conf:
-  nameservers: ['192.168.1.10', '192.168.1.5']
+  nameservers: ['192.168.2.10', '192.168.2.5']
   searchdomains:
     - adamkoro.local
     - adamkoro.com
@@ -29,7 +29,7 @@ resolv_conf:
 write_files:
   - path: /etc/sysctl.d/99-swappiness.conf
     content: |
-      vm.swappiness=5
+      vm.swappiness=1
   # For Ubuntu
   #- path: /usr/local/share/ca-certificates/adamkoro.local.crt
   # For Suse
