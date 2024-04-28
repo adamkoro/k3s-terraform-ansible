@@ -72,7 +72,6 @@
     daemon_reload: true
     state: restarted
     enabled: true
-  when: longhorn_requirements is changed
   tags:
     - restore
     - agent-recover
