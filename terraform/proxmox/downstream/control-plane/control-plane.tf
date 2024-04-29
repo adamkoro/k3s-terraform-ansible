@@ -14,6 +14,13 @@ resource "proxmox_vm_qemu" "server" {
     startup     = "order=3"
     clone       = var.proxmox_template_name
 disks {
+        sata {
+            sata0 {
+                cdrom {
+                    iso = proxmox_cloud_init_disk.cp_ci[count.index].id
+                }
+            }
+        }
         scsi {
             # Root
             scsi0 {
@@ -68,12 +75,6 @@ disks {
         bridge = "adamkoro"
         model  = "virtio"
     }
-    os_type = "cloud-init"
-    cloudinit_cdrom_storage = var.proxmox_cloudinit_pool
-    ipconfig0 = "ip=${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway0}"
-    ipconfig1 = "ip=${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask},gw=${var.cloud_init_gateway1}"
-    ipconfig2 = "ip=${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}"
-    cicustom = "user=${var.proxmox_cloudinit_pool}:snippets/cloud_init_${var.proxmox_vm_name}-cp-${count.index + 1}.yml"
     # Check if vm ssh port is open
     provisioner "local-exec" {
         command = "while ! nc -q0 ${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
