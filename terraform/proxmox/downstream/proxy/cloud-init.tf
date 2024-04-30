@@ -15,6 +15,10 @@ EOT
 #cloud-config
 package_update: false
 package_upgrade: false
+locale: "en_US.UTF-8"
+keyboard:
+  layout: "hu"
+  variant: ""
 users:
 - name: ${var.cloud_init_username}
   groups: sudo
@@ -31,6 +35,18 @@ fqdn: ${var.proxmox_vm_name}-proxy-${count.index + 1}.${var.cloud_init_domain}
 manage_etc_hosts: true
 manage_resolv_conf: true
 write_files:
+  - path: /usr/local/bin/update-issue.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      echo "Welcome to $(lsb_release -d -s)" > /etc/issue
+      echo "" >> /etc/issue
+      for interface in $(ls /sys/class/net | grep -v lo); do
+          IP=$(ip addr show $interface | grep 'inet ' | awk '{print $2}')
+          echo "$interface: $IP" >> /etc/issue
+      done
+      echo "" >> /etc/issue
+      systemctl restart getty@tty1.service
   - path: /etc/sysctl.d/99-disable-ipv6.conf
     permissions: '0644'
     owner: root:root
@@ -43,10 +59,7 @@ write_files:
     owner: root:root
     content: |
       vm.swappiness=1
-  # For Ubuntu
   - path: /usr/local/share/ca-certificates/adamkoro.local.crt
-  # For Suse
-  #- path: /etc/pki/trust/anchors/adamkoro.local.crt
     content: |
       -----BEGIN CERTIFICATE-----
       MIIGeDCCBGCgAwIBAgIUXEAlSELTC9mz/+SfoOt/iE3tTcYwDQYJKoZIhvcNAQEL
@@ -88,7 +101,7 @@ write_files:
 packages:
   - qemu-guest-agent
 runcmd:
-  # Uncomment if u are using an Ubuntu
+  - /usr/local/bin/update-issue.sh
   - sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
   - systemctl restart systemd-resolved
   - systemctl daemon-reload
