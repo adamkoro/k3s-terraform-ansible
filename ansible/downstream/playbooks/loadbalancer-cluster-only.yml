@@ -4,7 +4,7 @@
     - loadbalancer
   gather_facts: true
 
-- name: Setup Nginx crm proxy cluster
+- name: Setup loadbalancer cluster
   hosts: 
     - loadbalancer
   gather_facts: true

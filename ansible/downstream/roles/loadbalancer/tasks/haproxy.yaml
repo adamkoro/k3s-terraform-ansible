@@ -1,0 +1,55 @@
+---
+# Install haproxy
+- name: Install required packages
+  community.general.zypper:
+    name:
+      - haproxy
+    state: present
+    disable_recommends: false
+  when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - haproxy
+    state: present
+    install_recommends: true
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+# Copy haproxy config
+- name: Copy haproxy config
+  template:
+    src: "haproxy.cfg.j2"
+    dest: "/etc/haproxy/haproxy.cfg"
+    owner: root
+    group: root
+    mode: '0640'
+  register: haproxy_config_file
+
+# Check haproxy config file
+- name: Check HAProxy configuration
+  command: haproxy -f /etc/haproxy/haproxy.cfg -c
+  register: haproxy_check
+  ignore_errors: true
+
+# Start haproxy service
+- name: Start haproxy configuration
+  service:
+    name: haproxy
+    state: started
+    enabled: true
+
+# Reload haproxy service
+- name: Reload haproxy configuration
+  service:
+    name: haproxy
+    state: reloaded
+  when: haproxy_check.rc ==  0 and haproxy_config_file is changed
+
+# Check haproxy access
+- name: Check haproxy port access
+  wait_for:
+    host: "{{ keepalived_vip_address0.split('/')[0] }}"
+    port: 80
+    state: started
+    timeout: 5

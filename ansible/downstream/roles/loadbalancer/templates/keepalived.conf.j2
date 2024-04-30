@@ -1,0 +1,61 @@
+global_defs {
+    router_id {{ ansible_hostname }}
+}
+vrrp_script haproxy {
+    script "killall -0 haproxy"
+    interval 2
+    weight 2
+}
+vrrp_instance 50 {
+    virtual_router_id 50
+    advert_int 1
+    priority 50
+{% if inventory_hostname == groups['loadbalancer'][0] %}
+    state MASTER
+{% else %}
+    state BACKUP
+{% endif %}
+    interface {{ keepalived_interface0 }}
+    virtual_ipaddress {
+        {{ keepalived_vip_address0 }}
+    }
+    track_script {
+        haproxy
+    }
+}
+
+vrrp_instance 55 {
+    virtual_router_id 55
+    advert_int 1
+    priority 50
+{% if inventory_hostname == groups['loadbalancer'][0] %}
+    state MASTER
+{% else %}
+    state BACKUP
+{% endif %}
+    interface {{ keepalived_interface1 }}
+    virtual_ipaddress {
+        {{ keepalived_vip_address1 }}
+    }
+    track_script {
+        haproxy
+    }
+}
+
+vrrp_instance 60 {
+    virtual_router_id 60
+    advert_int 1
+    priority 50
+{% if inventory_hostname == groups['loadbalancer'][0] %}
+    state MASTER
+{% else %}
+    state BACKUP
+{% endif %}
+    interface {{ keepalived_interface2 }}
+    virtual_ipaddress {
+        {{ keepalived_vip_address2 }}
+    }
+    track_script {
+        haproxy
+    }
+}
