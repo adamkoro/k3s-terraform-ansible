@@ -28,9 +28,11 @@ defaults
 
 frontend etcd_frontend
     bind :6444
+    mode tcp
     default_backend kube_api_etcd_nodes
 
 backend kube_api_etcd_nodes
+    mode tcp
     balance roundrobin
     {% for host in groups['etcd'] %}
     server {{ host }} {{ hostvars[host]["ansible_facts"][flannel_iface]["ipv4"]["address"] }}:6443 maxconn 100 check fall 3 rise 2 inter 2000
@@ -38,9 +40,11 @@ backend kube_api_etcd_nodes
 
 frontend kube_api_frontend
     bind :6443
+    mode tcp
     default_backend kube_api_control-plane_nodes
 
 backend kube_api_control-plane_nodes
+    mode tcp
     balance roundrobin
     {% for host in groups['server'] %}
     server {{ host }} {{ hostvars[host]["ansible_facts"][flannel_iface]["ipv4"]["address"] }}:6443 maxconn 100 check fall 3 rise 2 inter 2000
@@ -48,19 +52,23 @@ backend kube_api_control-plane_nodes
 
 frontend http_frontend
     bind *:80
+    mode tcp
     default_backend kube_http
 
 backend kube_http
+    mode tcp
     balance roundrobin
     {% for host in groups['server'] %}
     server {{ host }} {{ hostvars[host]["ansible_facts"][flannel_iface]["ipv4"]["address"] }}:80 maxconn 100 check fall 3 rise 2 inter 2000
     {% endfor %}
 
-frontend https_frontend
+frontend https_frontend 
     bind *:443
+    mode tcp
     default_backend kube_https
 
 backend kube_https
+    mode tcp
     balance roundrobin
     {% for host in groups['server'] %}
     server {{ host }} {{ hostvars[host]["ansible_facts"][flannel_iface]["ipv4"]["address"] }}:443 maxconn 100 check fall 3 rise 2 inter 2000
