@@ -19,6 +19,7 @@ locale: "en_US.UTF-8"
 keyboard:
   layout: "hu"
   variant: ""
+timezone: "Europa/Budapest"
 users:
 - name: ${var.cloud_init_username}
   groups: sudo
