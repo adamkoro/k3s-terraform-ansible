@@ -31,13 +31,22 @@ fqdn: ${var.proxmox_vm_name}-cp-${count.index + 1}.${var.cloud_init_domain}
 manage_etc_hosts: true
 manage_resolv_conf: true
 write_files:
+  - path: /etc/sysctl.d/99-disable-ipv6.conf
+    permissions: '0644'
+    owner: root:root
+    content: |
+      net.ipv6.conf.all.disable_ipv6 = 1
+      net.ipv6.conf.default.disable_ipv6 = 1
+      net.ipv6.conf.lo.disable_ipv6 = 1
   - path: /etc/sysctl.d/99-swappiness.conf
+    permissions: '0644'
+    owner: root:root
     content: |
       vm.swappiness=1
   # For Ubuntu
-  #- path: /usr/local/share/ca-certificates/adamkoro.local.crt
+  - path: /usr/local/share/ca-certificates/adamkoro.local.crt
   # For Suse
-  - path: /etc/pki/trust/anchors/adamkoro.local.crt
+  #- path: /etc/pki/trust/anchors/adamkoro.local.crt
     content: |
       -----BEGIN CERTIFICATE-----
       MIIGeDCCBGCgAwIBAgIUXEAlSELTC9mz/+SfoOt/iE3tTcYwDQYJKoZIhvcNAQEL
@@ -76,23 +85,25 @@ write_files:
       WZfm2rHRGf87Y+qG5K/QPT1dCqNRtNCb67+U/qZZF83j+Gr0p5HMseuq5N8q5V93
       jJWp7PpOvPUJHt4rqutKQL0fnhrnMTnESpuyJw==
       -----END CERTIFICATE-----
-#packages:
-#  - qemu-guest-agent
+packages:
+  - qemu-guest-agent
 runcmd:
   # Uncomment if u are using an Ubuntu
-  #- sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
-  #- systemctl restart systemd-resolved
-  #- systemctl daemon-reload
-  #- systemctl enable qemu-guest-agent
-  #- systemctl start qemu-guest-agent
+  - sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
+  - systemctl restart systemd-resolved
+  - systemctl daemon-reload
+  - systemctl enable qemu-guest-agent
+  - systemctl start qemu-guest-agent
   - update-ca-certificates
+  - sysctl -p /etc/sysctl.d/99-disable-ipv6.conf
+  - sysctl -p /etc/sysctl.d/99-swappiness.conf
   EOT
 
   network_config = <<EOT
 network:
   version: 2
   ethernets:
-    eth1:
+    enp6s18:
       dhcp4: no
       dhcp6: no
       addresses:
@@ -104,7 +115,7 @@ network:
         - to: 0.0.0.0/0
           via: ${var.cloud_init_gateway0}
           metric: 50
-    eth2:
+    enp6s19:
       dhcp4: no
       dhcp6: no
       addresses:
@@ -115,13 +126,11 @@ network:
         - to: 0.0.0.0/0
           via: ${var.cloud_init_gateway1}
           metric: 100
-    eth3:
+    enp6s20:
       dhcp4: no
       dhcp6: no
       addresses:
         - ${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
-      nameservers:
-        addresses: [${var.cloud_init_gateway2}]
       routes:
         - to: 0.0.0.0/0
           via: ${var.cloud_init_gateway2}
