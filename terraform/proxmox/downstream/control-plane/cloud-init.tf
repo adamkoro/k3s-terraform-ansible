@@ -106,6 +106,7 @@ packages:
   - qemu-guest-agent
 runcmd:
   - /usr/local/bin/update-issue.sh
+  - systemctl disable --now ufw.service
   - sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
   - systemctl restart systemd-resolved
   - systemctl daemon-reload
