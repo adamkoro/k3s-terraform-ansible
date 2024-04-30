@@ -3,4 +3,4 @@
 ## Runtime args
 #############
 runtime_server_args: >-
-  --server http://{{ cluster_endpoint }}:6444
+  --server https://{{ cluster_endpoint }}:6444
