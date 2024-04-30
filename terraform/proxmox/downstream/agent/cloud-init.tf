@@ -109,7 +109,7 @@ network:
       addresses:
         - ${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
       nameservers:
-        addresses: [192.168.2.10, 192.168.2.5, ${var.cloud_init_gateway0}]
+        addresses: [192.168.2.10, 192.168.2.5]
         search: [adamkoro.local, adamkoro.com]
       routes:
         - to: 0.0.0.0/0
