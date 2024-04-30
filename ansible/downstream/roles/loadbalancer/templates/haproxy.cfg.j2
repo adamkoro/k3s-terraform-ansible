@@ -27,7 +27,7 @@ defaults
     timeout server    10s
 
 frontend etcd_frontend
-    bind {{ cluster_endpoint }}:6444
+    bind :6444
     default_backend kube_api_etcd_nodes
 
 backend kube_api_etcd_nodes
@@ -37,7 +37,7 @@ backend kube_api_etcd_nodes
     {% endfor %}
 
 frontend kube_api_frontend
-    bind {{ cluster_endpoint }}:6443
+    bind :6443
     default_backend kube_api_control-plane_nodes
 
 backend kube_api_control-plane_nodes
