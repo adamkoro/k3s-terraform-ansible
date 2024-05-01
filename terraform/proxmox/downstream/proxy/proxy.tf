@@ -9,7 +9,7 @@ resource "proxmox_vm_qemu" "proxy" {
     agent       = 1
     onboot      = true
     scsihw      = "virtio-scsi-single"
-    full_clone  = true
+    full_clone  = var.proxmox_vm_full_clone
     bootdisk    = "scsi0"
     startup     = "order=1"
     clone       = var.proxmox_template_name

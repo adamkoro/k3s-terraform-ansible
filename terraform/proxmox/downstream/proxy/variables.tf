@@ -6,6 +6,10 @@ variable "vm_count" {
 variable "proxmox_vm_name" {
   description = "Name of VMs to create"
 }
+variable "proxmox_vm_full_clone" {
+  type = bool
+  description = "Full or linked clone"
+}
 variable "proxmox_template_name" {
   type        = string
   description = "Proxmox VM template"

@@ -34,27 +34,6 @@ preserve_hostname: false
 hostname: ${var.proxmox_vm_name}-etcd-${count.index + 1}
 fqdn: ${var.proxmox_vm_name}-etcd-${count.index + 1}.${var.cloud_init_domain}
 write_files:
-  - path: /etc/sysctl.d/90-kubelet.conf
-    permissions: '0644'
-    owner: root:root
-    content: |
-      vm.panic_on_oom=0
-      vm.overcommit_memory=1
-      kernel.panic=10
-      kernel.panic_on_oops=1
-      net.ipv4.ip_forward = 1
-  - path: /etc/sysctl.d/99-disable-ipv6.conf
-    permissions: '0644'
-    owner: root:root
-    content: |
-      net.ipv6.conf.all.disable_ipv6 = 1
-      net.ipv6.conf.default.disable_ipv6 = 1
-      net.ipv6.conf.lo.disable_ipv6 = 1
-  - path: /etc/sysctl.d/99-swappiness.conf
-    permissions: '0644'
-    owner: root:root
-    content: |
-      vm.swappiness=1
   - path: /etc/pki/trust/anchors/adamkoro.local.crt
     content: |
       -----BEGIN CERTIFICATE-----
@@ -94,44 +73,34 @@ write_files:
       WZfm2rHRGf87Y+qG5K/QPT1dCqNRtNCb67+U/qZZF83j+Gr0p5HMseuq5N8q5V93
       jJWp7PpOvPUJHt4rqutKQL0fnhrnMTnESpuyJw==
       -----END CERTIFICATE-----
+bootcmd:
+  - sysctl -w net.ipv6.conf.all.disable_ipv6=1
+  - sysctl -w net.ipv6.conf.default.disable_ipv6=1
+  - sysctl -w net.ipv4.ip_forward=1
+  - sysctl -w vm.swappiness=1      
+  - sysctl -w vm.panic_on_oom=0
+  - sysctl -w vm.overcommit_memory=1
+  - sysctl -w kernel.panic=10
+  - sysctl -w kernel.panic_on_oops=1
+  - ip link set eth0 up
+  - ip addr add ${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask} dev eth0
+  - ip route add default via ${var.cloud_init_gateway0} dev eth0
+  - ip link set eth1 up
+  - ip addr add ${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask} dev eth1
+  - ip route add default via ${var.cloud_init_gateway1} dev eth1 metric 100
+  - ip link set eth2 up
+  - ip addr add ${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask} dev eth2
+  - echo "nameserver 192.168.2.10" > /etc/resolv.conf
+  - echo "nameserver 192.168.2.5" >> /etc/resolv.conf
+  - echo "nameserver 192.168.1.254" >> /etc/resolv.conf
+  #- echo "search adamkoro.local adamkoro.com" >> /etc/resolv.conf
 runcmd:
   - update-ca-certificates
-  - sysctl -p /etc/sysctl.d/90-kubelet.conf
-  - sysctl -p /etc/sysctl.d/99-disable-ipv6.conf
-  - sysctl -p /etc/sysctl.d/99-swappiness.conf
-  EOT
+EOT
 
   network_config = <<EOT
+#cloud-config
 network:
-  version: 2
-  ethernets:
-    eth0:
-      dhcp4: no
-      dhcp6: no
-      addresses:
-        - ${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
-      nameservers:
-        addresses: [192.168.2.10, 192.168.2.5]
-        search: [adamkoro.local, adamkoro.com]
-      routes:
-        - to: 0.0.0.0/0
-          via: ${var.cloud_init_gateway0}
-          metric: 10
-    eth1:
-      dhcp4: no
-      dhcp6: no
-      addresses:
-        - ${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
-      nameservers:
-        addresses: [${var.cloud_init_gateway1}]
-      routes:
-        - to: 0.0.0.0/0
-          via: ${var.cloud_init_gateway1}
-          metric: 100
-    eth2:
-      dhcp4: no
-      dhcp6: no
-      addresses:
-        - ${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
+  config: disabled
 EOT
 }
