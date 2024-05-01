@@ -34,18 +34,6 @@ preserve_hostname: false
 hostname: ${var.proxmox_vm_name}-cp-${count.index + 1}
 fqdn: ${var.proxmox_vm_name}-cp-${count.index + 1}.${var.cloud_init_domain}
 write_files:
-  - path: /usr/local/bin/update-issue.sh
-    permissions: '0755'
-    content: |
-      #!/bin/bash
-      echo "Welcome to $(lsb_release -d -s)" > /etc/issue
-      echo "" >> /etc/issue
-      for interface in $(ls /sys/class/net | grep -v lo); do
-          IP=$(ip addr show $interface | grep 'inet ' | awk '{print $2}')
-          echo "$interface: $IP" >> /etc/issue
-      done
-      echo "" >> /etc/issue
-      systemctl restart getty@tty1.service
   - path: /etc/sysctl.d/90-kubelet.conf
     permissions: '0644'
     owner: root:root
@@ -67,9 +55,6 @@ write_files:
     owner: root:root
     content: |
       vm.swappiness=1
-  # For Ubuntu
-  #- path: /usr/local/share/ca-certificates/adamkoro.local.crt
-  # For Suse
   - path: /etc/pki/trust/anchors/adamkoro.local.crt
     content: |
       -----BEGIN CERTIFICATE-----
@@ -109,16 +94,7 @@ write_files:
       WZfm2rHRGf87Y+qG5K/QPT1dCqNRtNCb67+U/qZZF83j+Gr0p5HMseuq5N8q5V93
       jJWp7PpOvPUJHt4rqutKQL0fnhrnMTnESpuyJw==
       -----END CERTIFICATE-----
-#packages:
-#  - qemu-guest-agent
 runcmd:
-  #- /usr/local/bin/update-issue.sh
-  #- systemctl disable --now ufw.service
-  #- sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
-  #- systemctl restart systemd-resolved
-  #- systemctl daemon-reload
-  #- systemctl enable qemu-guest-agent
-  #- systemctl start qemu-guest-agent
   - update-ca-certificates
   - sysctl -p /etc/sysctl.d/90-kubelet.conf
   - sysctl -p /etc/sysctl.d/99-disable-ipv6.conf
