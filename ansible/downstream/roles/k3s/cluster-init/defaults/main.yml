@@ -32,6 +32,7 @@ etcd_config_yaml: |
     - servicelb
     - traefik
     - local-storage
+  protect-kernel-defaults: true
   disable-apiserver: true
   disable-controller-manager: true
   disable-scheduler: true
@@ -64,3 +65,4 @@ server_config_yaml: |
     - traefik
     - local-storage
   disable-etcd: true
+  protect-kernel-defaults: true

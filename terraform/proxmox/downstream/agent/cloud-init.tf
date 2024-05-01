@@ -48,6 +48,14 @@ write_files:
       done
       echo "" >> /etc/issue
       systemctl restart getty@tty1.service
+  - path: /etc/sysctl.d/90-kubelet.conf
+    permissions: '0644'
+    owner: root:root
+    content: |
+      vm.panic_on_oom=0
+      vm.overcommit_memory=1
+      kernel.panic=10
+      kernel.panic_on_oops=1
   - path: /etc/sysctl.d/99-disable-ipv6.conf
     permissions: '0644'
     owner: root:root
@@ -113,6 +121,7 @@ runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
   - update-ca-certificates
+  - sysctl -p /etc/sysctl.d/90-kubelet.conf
   - sysctl -p /etc/sysctl.d/99-disable-ipv6.conf
   - sysctl -p /etc/sysctl.d/99-swappiness.conf
   EOT
