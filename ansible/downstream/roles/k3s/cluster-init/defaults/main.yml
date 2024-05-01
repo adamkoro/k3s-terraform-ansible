@@ -26,7 +26,6 @@ etcd_config_yaml: |
     - "node.kubernetes.io/etcd=true"
   node-taint:
     - "EtcdOnly=true:NoExecute"
-  flannel-iface: "{{ flannel_iface }}"
   node-ip: "{{ flannel_node_ip }}"
   disable:
     - servicelb
@@ -58,7 +57,6 @@ server_config_yaml: |
     - "node.kubernetes.io/control-plane=true"
   node-taint:
     - "CriticalAddonsOnly=true:NoExecute"
-  flannel-iface: "{{ flannel_iface }}"
   node-ip: "{{ flannel_node_ip }}"
   disable:
     - servicelb
