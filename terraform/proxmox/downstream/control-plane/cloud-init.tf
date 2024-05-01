@@ -33,8 +33,6 @@ ssh_pwauth: true
 preserve_hostname: false
 hostname: ${var.proxmox_vm_name}-cp-${count.index + 1}
 fqdn: ${var.proxmox_vm_name}-cp-${count.index + 1}.${var.cloud_init_domain}
-manage_etc_hosts: true
-manage_resolv_conf: true
 write_files:
   - path: /usr/local/bin/update-issue.sh
     permissions: '0755'
@@ -56,6 +54,7 @@ write_files:
       vm.overcommit_memory=1
       kernel.panic=10
       kernel.panic_on_oops=1
+      net.ipv4.ip_forward = 1
   - path: /etc/sysctl.d/99-disable-ipv6.conf
     permissions: '0644'
     owner: root:root
@@ -69,9 +68,9 @@ write_files:
     content: |
       vm.swappiness=1
   # For Ubuntu
-  - path: /usr/local/share/ca-certificates/adamkoro.local.crt
+  #- path: /usr/local/share/ca-certificates/adamkoro.local.crt
   # For Suse
-  #- path: /etc/pki/trust/anchors/adamkoro.local.crt
+  - path: /etc/pki/trust/anchors/adamkoro.local.crt
     content: |
       -----BEGIN CERTIFICATE-----
       MIIGeDCCBGCgAwIBAgIUXEAlSELTC9mz/+SfoOt/iE3tTcYwDQYJKoZIhvcNAQEL
@@ -110,16 +109,16 @@ write_files:
       WZfm2rHRGf87Y+qG5K/QPT1dCqNRtNCb67+U/qZZF83j+Gr0p5HMseuq5N8q5V93
       jJWp7PpOvPUJHt4rqutKQL0fnhrnMTnESpuyJw==
       -----END CERTIFICATE-----
-packages:
-  - qemu-guest-agent
+#packages:
+#  - qemu-guest-agent
 runcmd:
-  - /usr/local/bin/update-issue.sh
-  - systemctl disable --now ufw.service
-  - sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
-  - systemctl restart systemd-resolved
-  - systemctl daemon-reload
-  - systemctl enable qemu-guest-agent
-  - systemctl start qemu-guest-agent
+  #- /usr/local/bin/update-issue.sh
+  #- systemctl disable --now ufw.service
+  #- sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
+  #- systemctl restart systemd-resolved
+  #- systemctl daemon-reload
+  #- systemctl enable qemu-guest-agent
+  #- systemctl start qemu-guest-agent
   - update-ca-certificates
   - sysctl -p /etc/sysctl.d/90-kubelet.conf
   - sysctl -p /etc/sysctl.d/99-disable-ipv6.conf
@@ -130,7 +129,7 @@ runcmd:
 network:
   version: 2
   ethernets:
-    enp6s18:
+    eth0:
       dhcp4: no
       dhcp6: no
       addresses:
@@ -141,8 +140,8 @@ network:
       routes:
         - to: 0.0.0.0/0
           via: ${var.cloud_init_gateway0}
-          metric: 50
-    enp6s19:
+          metric: 10
+    eth1:
       dhcp4: no
       dhcp6: no
       addresses:
@@ -153,14 +152,10 @@ network:
         - to: 0.0.0.0/0
           via: ${var.cloud_init_gateway1}
           metric: 100
-    enp6s20:
+    eth2:
       dhcp4: no
       dhcp6: no
       addresses:
         - ${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
-      routes:
-        - to: 0.0.0.0/0
-          via: ${var.cloud_init_gateway2}
-          metric: 150
 EOT
 }
