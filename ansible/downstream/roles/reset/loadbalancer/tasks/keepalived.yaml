@@ -1,0 +1,26 @@
+---
+- name: Stop and disable keepalived
+  systemd:
+    name: keepalived
+    daemon_reload: true
+    state: stopped
+    enabled: false
+
+- name: Remove keepalived config
+  file:
+    path: /etc/keepalived/keepalived.conf
+    state: absent
+
+- name: Remove packages
+  community.general.zypper:
+    name:
+      - keepalived
+    state: absent
+  when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
+
+- name: Remove packages
+  ansible.builtin.apt:
+    name:
+      - keepalived
+    state: absent
+  when: ansible_facts['distribution'] == "Ubuntu"

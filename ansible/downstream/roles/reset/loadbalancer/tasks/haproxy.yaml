@@ -1,0 +1,25 @@
+- name: Stop and disable haproxy
+  systemd:
+    name: haproxy
+    daemon_reload: true
+    state: stopped
+    enabled: false
+
+- name: Remove haproxy config
+  file:
+    path: /etc/haproxy/haproxy.cfg
+    state: absent
+
+- name: Remove packages
+  community.general.zypper:
+    name:
+      - haproxy
+    state: absent
+  when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
+
+- name: Remove packages
+  ansible.builtin.apt:
+    name:
+      - haproxy
+    state: absent
+  when: ansible_facts['distribution'] == "Ubuntu"
