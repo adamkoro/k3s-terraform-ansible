@@ -1,0 +1,5 @@
+- name: "Loadbalancer cluster"
+  import_playbook: loadbalancer-cluster-install.yml
+
+- name: "K3s cluster"
+  import_playbook: k3s-cluster-install.yml

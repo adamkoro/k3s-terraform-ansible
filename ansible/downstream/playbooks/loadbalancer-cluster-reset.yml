@@ -1,0 +1,6 @@
+- name: Reset loadbalancer cluster
+  hosts: loadbalancer
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: reset/loadbalancer
