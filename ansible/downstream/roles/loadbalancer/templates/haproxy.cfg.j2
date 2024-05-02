@@ -29,6 +29,9 @@ defaults
 frontend etcd_frontend
     bind :6444
     mode tcp
+    acl network_allowed src {{ haproxy_kube_api_network }}
+    tcp-request connection accept if network_allowed
+    tcp-request connection reject if !network_allowed
     default_backend kube_api_etcd_nodes
 
 backend kube_api_etcd_nodes
@@ -41,6 +44,9 @@ backend kube_api_etcd_nodes
 frontend kube_api_frontend
     bind :6443
     mode tcp
+    acl network_allowed src {{ haproxy_kube_api_network }}
+    tcp-request connection accept if network_allowed
+    tcp-request connection reject if !network_allowed
     default_backend kube_api_control-plane_nodes
 
 backend kube_api_control-plane_nodes
