@@ -129,11 +129,6 @@ variable "proxmox_cloudinit_pool" {
   description = "Proxmox cloud-init pool"
   
 }
-variable "cloudinit_host_pool_path" {
-  type = string
-  description = "Host pool path for cloud-init snippet"
-  
-}
 variable "proxmox_user" {
   type        = string
   description = "Proxmox user"

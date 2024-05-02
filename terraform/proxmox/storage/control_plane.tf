@@ -7,9 +7,9 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
     cpu         = "host"
     memory      = 6144
     agent       = 1
-    onboot      = var.proxmox_vm_full_clone
+    onboot      = true
     scsihw      = "virtio-scsi-single"
-    full_clone  = true
+    full_clone  = var.proxmox_vm_full_clone
     startup     = "order=0"
     bootdisk    = "scsi0"
     clone       = var.proxmox_template_name
@@ -86,10 +86,10 @@ resource "proxmox_vm_qemu" "storage_control_plane" {
     }
 
     provisioner "local-exec" {
-        command = "while ! nc -q0 ${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
+        command = "while ! nc -q0 ${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase} 22 < /dev/null > /dev/null 2>&1; do sleep 10;done"
     }
 
     provisioner "local-exec" {
-        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook control_plane_setup.yaml -i '${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase},' --private-key ${var.ansbile_private_key} -e ansible_user=${var.cloud_init_username}"
+        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook control_plane_setup.yaml -i '${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase},' --private-key ${var.ansbile_private_key} -e ansible_user=${var.cloud_init_username}"
     }
 }
