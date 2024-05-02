@@ -34,7 +34,19 @@ preserve_hostname: false
 hostname: ${var.proxmox_vm_name}-proxy-${count.index + 1}
 fqdn: ${var.proxmox_vm_name}-proxy-${count.index + 1}.${var.cloud_init_domain}
 write_files:
-  - path: /etc/pki/trust/anchors/adamkoro.local.crt
+  - path: /usr/local/bin/update-issue.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      echo "Welcome to $(lsb_release -d -s)" > /etc/issue
+      echo "" >> /etc/issue
+      for interface in $(ls /sys/class/net | grep -v lo); do
+          IP=$(ip addr show $interface | grep 'inet ' | awk '{print $2}')
+          echo "$interface: $IP" >> /etc/issue
+      done
+      echo "" >> /etc/issue
+      systemctl restart getty@tty1.service
+  - path: /usr/local/share/ca-certificates/adamkoro.local.crt
     content: |
       -----BEGIN CERTIFICATE-----
       MIIGeDCCBGCgAwIBAgIUXEAlSELTC9mz/+SfoOt/iE3tTcYwDQYJKoZIhvcNAQEL
@@ -73,6 +85,8 @@ write_files:
       WZfm2rHRGf87Y+qG5K/QPT1dCqNRtNCb67+U/qZZF83j+Gr0p5HMseuq5N8q5V93
       jJWp7PpOvPUJHt4rqutKQL0fnhrnMTnESpuyJw==
       -----END CERTIFICATE-----
+packages:
+  - qemu-guest-agent
 bootcmd:
   - sysctl -w net.ipv6.conf.all.disable_ipv6=1
   - sysctl -w net.ipv6.conf.default.disable_ipv6=1
@@ -82,25 +96,43 @@ bootcmd:
   - sysctl -w vm.overcommit_memory=1
   - sysctl -w kernel.panic=10
   - sysctl -w kernel.panic_on_oops=1
-  - ip link set eth0 up
-  - ip addr add ${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask} dev eth0
-  - ip route add default via ${var.cloud_init_gateway0} dev eth0
-  - ip link set eth1 up
-  - ip addr add ${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask} dev eth1
-  - ip route add default via ${var.cloud_init_gateway1} dev eth1 metric 100
-  - ip link set eth2 up
-  - ip addr add ${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask} dev eth2
-  - echo "nameserver 192.168.2.10" > /etc/resolv.conf
-  - echo "nameserver 192.168.2.5" >> /etc/resolv.conf
-  - echo "nameserver 192.168.1.254" >> /etc/resolv.conf
-  #- echo "search adamkoro.local adamkoro.com" >> /etc/resolv.conf
+  - systemctl disable --now ufw.service
 runcmd:
+  - systemctl start ssh.service
+  - systemctl start qemu-guest-agent.service
+  - /usr/local/bin/update-issue.sh
   - update-ca-certificates
 EOT
 
   network_config = <<EOT
 #cloud-config
 network:
-  config: disabled
+  version: 2
+  ethernets:
+    enp6s18:
+      dhcp4: no
+      addresses:
+        - ${var.cloud_init_ip_pool0}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
+      nameservers:
+        addresses: [192.168.2.10, 192.168.2.5]
+        search: [adamkoro.local]
+      routes:
+        - to: 0.0.0.0/0
+          via: ${var.cloud_init_gateway0}
+          metric: 50
+    enp6s19:
+      dhcp4: no
+      addresses:
+        - ${var.cloud_init_ip_pool1}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
+      nameservers:
+        addresses: [${var.cloud_init_gateway1}]
+      routes:
+        - to: 0.0.0.0/0
+          via: ${var.cloud_init_gateway1}
+          metric: 100
+    enp6s20:
+      dhcp4: no
+      addresses:
+        - ${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
 EOT
 }
