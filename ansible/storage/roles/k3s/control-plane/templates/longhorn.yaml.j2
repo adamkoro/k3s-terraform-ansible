@@ -7,12 +7,23 @@ metadata:
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
+    name: longhorn-crd
+    namespace: kube-system
+spec:
+    chart: longhorn-crd
+    version: {{ longhorn_version }}
+    repo: https://charts.rancher.io
+    targetNamespace: longhorn-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
     name: longhorn
     namespace: kube-system
 spec:
     chart: longhorn
     version: {{ longhorn_version }}
-    repo: https://charts.longhorn.io
+    repo: https://charts.rancher.io
     targetNamespace: longhorn-system
     valuesContent: |-
         persistence: 
@@ -41,3 +52,19 @@ stringData:
     AWS_ACCESS_KEY_ID: "{{ longhhorn_backup_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ longhhorn_backup_secret_key_id }}" 
     AWS_ENDPOINTS: "{{ longhorn_backup_s3_endpoints }}"
+#---
+#apiVersion: longhorn.io/v1beta2
+#kind: RecurringJob
+#metadata:
+#    name: backup-s3
+#    namespace: longhorn-system
+#spec:
+#    task: backup
+#    concurrency: 4
+#    cron: 0 20 * * *
+#    labels:
+#        backup-s3: "true"
+#    groups:
+#    -  backup-s3
+#    name:  backup-s3
+#    retain: 1
