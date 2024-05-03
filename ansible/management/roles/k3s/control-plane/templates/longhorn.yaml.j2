@@ -7,12 +7,23 @@ metadata:
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
+    name: longhorn-crd
+    namespace: kube-system
+spec:
+    chart: longhorn-crd
+    version: {{ longhorn_version }}
+    repo: https://charts.rancher.io
+    targetNamespace: longhorn-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
     name: longhorn
     namespace: kube-system
 spec:
     chart: longhorn
     version: {{ longhorn_version }}
-    repo: https://charts.longhorn.io
+    repo: https://charts.rancher.io
     targetNamespace: longhorn-system
     valuesContent: |-
         persistence: 
