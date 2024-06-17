@@ -63,11 +63,11 @@ metadata:
     namespace: longhorn-system
 spec:
     task: backup
-    concurrency: 4
+    concurrency: 2
     cron: 0 20 * * *
     labels:
         backup-s3: "true"
     groups:
     -  backup-s3
     name:  backup-s3
-    retain: 1
+    retain: 5
