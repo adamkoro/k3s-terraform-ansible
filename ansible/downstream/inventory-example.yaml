@@ -32,13 +32,22 @@ cluster:
     ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
     ansible_user: "user"
 
+    # Loadbalancer settings
+    keepalived_interface0: "enp6s18"
+    keepalived_vip_address0: "192.168.2.20/32"
+    keepalived_interface1: "enp6s19"
+    keepalived_vip_address1: "192.168.1.20/32"
+    keepalived_interface2: "enp6s20"
+    keepalived_vip_address2: "172.12.0.20/32"
+    haproxy_kube_api_network: "172.12.0.0/24"
+
     # K3S settings
-    k3s_version: v1.26.12+k3s1
+    k3s_version: "v1.28.9+k3s1"
     k3s_token: "token"
     k3s_server_location: /var/lib/rancher/k3s
     systemd_dir: "/etc/systemd/system"
     skip_manifest_deploy: false
-    airgap_dir: /tmp/airgap_install
+    airgap_dir: "/tmp/airgap_install_1.28.9"
     
     #############
     ## Extra runtime args
@@ -50,6 +59,8 @@ cluster:
     #############
     ## Etcd S3 backup settings
     #############
+    etcd_metrics_enable: "true"
+    etcd_s3_backup_enable: "true"
     etcd_s3_backup_schedule: "0 */1 * * *"
     etcd_s3_backup_compress: "true"
     etcd_s3_backup_endpoint: "backup.domain.local"
@@ -70,20 +81,28 @@ cluster:
     flannel_node_ip: '{{ ansible_facts[flannel_iface]["ipv4"]["address"] }}'
 
     # Cert-manager setting
-    cert_manager_version: "v1.13.2"
+    cert_manager_version: "v1.14.5"
     # Cloudflare credentials for Let's encrypt certs
     cloudflare_email: "YOUR_CLOUDFLARE_EMAIL"
     cloudflare_api_key: "YOUR_CLOUDFLARE_API_KEY"
 
     # Nginx ingress settings
-    nginx_ingress_version: "v4.7.5"
+    nginx_ingress_version: "v4.10.1"
 
     # Metallb settings
-    metal_lb_version: "v0.14.3"
-    metal_lb_ip_range: "192.168.1.35-192.168.1.39"
+    metal_lb_version: "v0.14.5"
+    metal_lb_pool_1_name: "home-1"
+    metal_lb_pool_1_address: "192.168.2.35-192.168.2.39"
+    metal_lb_pool_1_interface: "enp6s18"
+    metal_lb_pool_2_name: "home-2"
+    metal_lb_pool_2_address: "192.168.1.35-192.168.1.39"
+    metal_lb_pool_2_interface: "enp6s19"
+    metal_lb_pool_3_name: "local"
+    metal_lb_pool_3_address: "172.11.0.50/32"
+    metal_lb_pool_3_interface: "enp6s20"
 
     # Longhorn setting
-    longhorn_version: "1.5.3"
+    longhorn_version: "103.3.1+up1.6.2"
     longhorn_ingress_enabled: "true"
     longhorn_hostname: "longhorn-example.domain.local"
     longhorn_replica_number: 3
@@ -93,6 +112,9 @@ cluster:
     longhhorn_backup_access_key_id: "ACCESS_KEY"
     longhhorn_backup_secret_key_id: "SECRET_KEY"
     longhorn_backup_s3_endpoints: "https://backup.domain.local"
+
+    # Rancher logging settings
+    rancher_logging_version: "103.1.1+up4.4.0"
 
     # Docker cache
     private_registry_url: "harbor.domain.local"
