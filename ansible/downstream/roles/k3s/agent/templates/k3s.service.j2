@@ -25,4 +25,4 @@ Restart=always
 RestartSec=5s
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
-ExecStart=/usr/local/bin/k3s agent {{ runtime_agent_args }} 
+ExecStart=/usr/local/bin/k3s agent {{ k3s_runtime_agent_args }} 

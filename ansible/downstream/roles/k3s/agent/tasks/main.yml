@@ -12,7 +12,7 @@
     dest: /usr/local/bin/k3s-install.sh
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
 
 - name: Download K3s binary
   when: airgap_dir is undefined and not service_file.stat.exists
@@ -29,41 +29,33 @@
     - name: Make config directory
       ansible.builtin.file:
         path: "/etc/rancher/k3s"
-        mode: 0750
+        mode: "0750"
         state: directory
     - name: Copy config values
       ansible.builtin.copy:
-        content: "{{ agent_config_yaml }}"
+        content: "{{ k3s_agent_config_yaml }}"
         dest: "/etc/rancher/k3s/config.yaml"
-        mode: 0640
+        mode: "0640"
       register: agent_config_file
 
 - name: Install Longhorn requirements
   community.general.zypper:
-    name: 
+    name:
       - open-iscsi
       - nfs-client
     state: present
     disable_recommends: false
   register: longhorn_requirements
-  tags:
-    - package_install
-    - restore
-    - agent-recover
   when: ansible_facts['distribution'] == "openSUSE Leap" or ansible_facts['distribution'] == "SLES"
 
 - name: Install Longhorn requirements
   ansible.builtin.apt:
-    name: 
+    name:
       - open-iscsi
       - nfs-client
     state: present
     install_recommends: true
   register: longhorn_requirements
-  tags:
-    - package_install
-    - restore
-    - agent-recover
   when: ansible_facts['distribution'] == "Ubuntu"
 
 - name: Enable and start iscsid
@@ -72,9 +64,6 @@
     daemon_reload: true
     state: restarted
     enabled: true
-  tags:
-    - restore
-    - agent-recover
 
 - name: Copy K3s service file
   ansible.builtin.template:
@@ -84,11 +73,6 @@
     group: root
     mode: "0755"
   register: k3s_service
-  tags:
-    - cluster_update
-    - update_k3s
-    - restore
-    - agent-recover
 
 - name: Enable and check K3s service
   ansible.builtin.systemd:
@@ -96,10 +80,4 @@
     daemon_reload: true
     state: restarted
     enabled: true
-  when: k3s_service is changed or agent_config_file is changed or registry_config_file is changed 
-  tags:
-    - cluster_update
-    - update_k3s
-    - restore
-    - private_registry
-    - agent-recover
+  when: k3s_service is changed or agent_config_file is changed or registry_config_file is changed

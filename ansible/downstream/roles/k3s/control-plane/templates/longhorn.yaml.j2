@@ -62,12 +62,30 @@ metadata:
     name: backup-s3
     namespace: longhorn-system
 spec:
+    name: backup-s3
     task: backup
+    retain: 3
     concurrency: 4
     cron: 0 20 * * *
     labels:
         backup-s3: "true"
     groups:
     -  backup-s3
-    name:  backup-s3
+
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+    name: snapshot
+    namespace: longhorn-system
+spec:
+    name: snapshot
+    task: snapshot
     retain: 3
+    concurrency: 4
+    cron: 0 20 * * *
+    labels:
+        snapshot: "true"
+    groups:
+    -  snapshot
+

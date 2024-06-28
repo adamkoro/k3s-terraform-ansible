@@ -6,9 +6,6 @@
     owner: root
     group: root
     mode: "0750"
-  tags:
-    - private_registry
-    - agent-recover
 
 - name: Setup private registry
   ansible.builtin.template:
@@ -19,6 +16,3 @@
     mode: "0640"
   when: inventory_hostname in groups['k3s_cluster']
   register: registry_config_file
-  tags:
-    - private_registry
-    - agent-recover

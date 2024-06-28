@@ -1,13 +1,13 @@
 ---
 - name: Stop and disable keepalived
-  systemd:
+  ansible.builtin.systemd:
     name: keepalived
     daemon_reload: true
     state: stopped
     enabled: false
 
 - name: Remove keepalived config
-  file:
+  ansible.builtin.file:
     path: /etc/keepalived/keepalived.conf
     state: absent
 

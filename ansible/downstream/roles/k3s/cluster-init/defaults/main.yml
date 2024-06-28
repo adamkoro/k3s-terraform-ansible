@@ -2,7 +2,7 @@
 #############
 ## Etcd & server init args
 #############
-etcd_init_args: >-
+k3s_etcd_init_args: >-
   {% if groups['etcd'] | length > 1 %}
     {% if ansible_hostname == hostvars[groups['etcd'][0]]['ansible_hostname'] %}
       --cluster-init
@@ -11,13 +11,13 @@ etcd_init_args: >-
     {% endif %}
   {% endif %}
 
-server_init_args: >-
+k3s_server_init_args: >-
       --server https://{{ hostvars[groups['etcd'][0]].flannel_node_ip }}:6443
 
 #############
 ## K3S etcd config
 #############
-etcd_config_yaml: |
+k3s_etcd_config_yaml: |
   token:
     - {{ k3s_token }}
   tls-san:
@@ -44,11 +44,13 @@ etcd_config_yaml: |
   etcd-s3-secret-key: {{ etcd_s3_backup_secret_key }}
   etcd-s3-bucket: {{ etcd_s3_backup_bucket }}
   etcd-s3-region: {{ etcd_s3_region }}
+  etcd-s3-skip-ssl-verify: {{ etcd_s3_skip_ssl_verify }}
+  etcd-s3-insecure: {{ etcd_s3_insecure }}
 
 #############
 ## K3S server config
 #############
-server_config_yaml: |
+k3s_server_config_yaml: |
   token:
     - {{ k3s_token }}
   tls-san:

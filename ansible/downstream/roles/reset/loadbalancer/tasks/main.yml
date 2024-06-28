@@ -1,7 +1,8 @@
+---
 - name: Remove haproxy
-  include_tasks: haproxy.yaml
+  ansible.builtin.include_tasks: haproxy.yaml
   when: inventory_hostname in groups['loadbalancer']
 
 - name: Remove keepalived
-  include_tasks: keepalived.yaml
+  ansible.builtin.include_tasks: keepalived.yaml
   when: inventory_hostname in groups['loadbalancer']

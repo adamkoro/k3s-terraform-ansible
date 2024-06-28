@@ -1,0 +1,24 @@
+---
+- name: Upgrade k3s etcd nodes
+  hosts: etcd
+  become: true
+  gather_facts: true
+  serial: 1
+  roles:
+    - role: k3s/upgrade
+
+- name: Upgrade k3s control-plane nodes
+  hosts: server
+  become: true
+  gather_facts: true
+  serial: 1
+  roles:
+    - role: k3s/upgrade
+
+- name: Upgrade k3s agent nodes
+  hosts: agent
+  become: true
+  gather_facts: true
+  serial: 1
+  roles:
+    - role: k3s/upgrade

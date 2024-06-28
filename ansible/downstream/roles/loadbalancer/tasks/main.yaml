@@ -1,8 +1,8 @@
 ---
 # Install keepalived
 - name: Include keepalived tasks
-  include_tasks: keepalived.yaml
+  ansible.builtin.include_tasks: keepalived.yaml
 
 # Install haproxy
 - name: Include haproxy tasks
-  include_tasks: haproxy.yaml
+  ansible.builtin.include_tasks: haproxy.yaml

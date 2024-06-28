@@ -65,7 +65,7 @@
     dest: "/var/lib/rancher/k3s/server/manifests/rancher-logging.yaml"
     owner: root
     group: root
-    mode: 0640
+    mode: "0640"
   when:
     - skip_manifest_deploy is false
   tags:

@@ -13,7 +13,7 @@
     dest: /usr/local/bin/k3s-install.sh
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
 
 - name: Download K3s binary
   when: airgap_dir is undefined and not service_file.stat.exists
@@ -25,132 +25,137 @@
   changed_when: true
 
 - name: Setup optional config file
-  when: etcd_config_yaml is defined and inventory_hostname in groups['etcd']
+  when: k3s_etcd_config_yaml is defined and inventory_hostname in groups['etcd']
   block:
     - name: Make config directory [etcd]
       ansible.builtin.file:
         path: "/etc/rancher/k3s"
-        mode: 0750
+        mode: "0750"
         state: directory
     - name: Copy config values [etcd]
       ansible.builtin.copy:
-        content: "{{ etcd_config_yaml }}"
+        content: "{{ k3s_etcd_config_yaml }}"
         dest: "/etc/rancher/k3s/config.yaml"
-        mode: 0640
+        mode: "0640"
       register: etcd_config_file
 
 - name: Setup optional config file
-  when: server_config_yaml is defined and inventory_hostname in groups['server']
+  when: k3s_server_config_yaml is defined and inventory_hostname in groups['server']
   block:
     - name: Make config directory [server]
       ansible.builtin.file:
         path: "/etc/rancher/k3s"
-        mode: 0750
+        mode: "0750"
         state: directory
     - name: Copy config values [server]
       ansible.builtin.copy:
-        content: "{{ server_config_yaml }}"
+        content: "{{ k3s_server_config_yaml }}"
         dest: "/etc/rancher/k3s/config.yaml"
-        mode: 0640
+        mode: "0640"
       register: server_config_file
 
 - name: Check if kubectl is installed
-  command: "/usr/local/bin/k3s kubectl get nodes"
+  ansible.builtin.command: "/usr/local/bin/k3s kubectl get nodes"
   register: kubectl_check
   failed_when: false
   changed_when: false
   when: inventory_hostname in groups['k3s_cluster_init']
 
-- block:
-  - name: Get list of control-plane nodes and check if all control-plane nodes are up
-    when: (kubectl_check.rc | default('') == 0) and inventory_hostname in groups['server']
-    block:
-    - name: Get list of etcd nodes
-      command: "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/etcd=true' -o=jsonpath='{.items[*].metadata.name}'"
-      register: etcd_nodes_list
-      changed_when: false
+- name: Get installed k3s cluster
+  block:
+    - name: Get list of control-plane nodes and check if all control-plane nodes are up
+      when: (kubectl_check.rc | default('') == 0) and inventory_hostname in groups['server']
+      block:
+        - name: Get list of etcd nodes
+          ansible.builtin.command: "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/etcd=true' -o=jsonpath='{.items[*].metadata.name}'"
+          register: etcd_nodes_list
+          changed_when: false
 
-    - name: Set etcd_nodes_list variable
-      set_fact:
-        etcd_nodes: true
-      when: etcd_nodes_list is succeeded and (etcd_nodes_list.stdout.split() | length) == (groups['etcd'] | length)
-  
-    - name: Get list of control-plane nodes
-      command: "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/control-plane=true' -o=jsonpath='{.items[*].metadata.name}'"
-      register: control_plane_nodes_list
-      changed_when: false
-  
-    - name: Set control_plane_nodes variable
-      set_fact:
-        control_plane_nodes: true
-      when: control_plane_nodes_list is succeeded and (control_plane_nodes_list.stdout.split() | length) == (groups['server'] | length)
+        - name: Set etcd_nodes_list variable
+          ansible.builtin.set_fact:
+            etcd_nodes: true
+          when: etcd_nodes_list is succeeded and (etcd_nodes_list.stdout.split() | length) == (groups['etcd'] | length)
 
-  - name: Set init_cluster variable to false if both etcd and control-plane nodes are up
-    set_fact:
-      init_cluster: false
-    when: control_plane_nodes is true and etcd_nodes is true
+        - name: Get list of control-plane nodes
+          ansible.builtin.command:
+            "/usr/local/bin/k3s kubectl get nodes -l 'node-role.kubernetes.io/control-plane=true' -o=jsonpath='{.items[*].metadata.name}'"
+          register: control_plane_nodes_list
+          changed_when: false
+
+        - name: Set control_plane_nodes variable
+          ansible.builtin.set_fact:
+            control_plane_nodes: true
+          when: control_plane_nodes_list is succeeded and (control_plane_nodes_list.stdout.split() | length) == (groups['server'] | length)
+
+    - name: Set init_cluster variable to false if both etcd and control-plane nodes are up
+      ansible.builtin.set_fact:
+        init_cluster: false
+      when: control_plane_nodes is true and etcd_nodes is true
 
 - name: Set init_cluster to true
-  set_fact:
-      init_cluster: true
+  ansible.builtin.set_fact:
+    init_cluster: true
   when: (kubectl_check.rc | default('') != 0) and inventory_hostname in groups['k3s_cluster_init']
 
 - name: Init cluster
   when: init_cluster is true
   block:
-  - name: Stop previous runs of k3s-init
-    ansible.builtin.systemd:
-      name: k3s-init
-      state: stopped
-    failed_when: false
+    - name: Stop previous runs of k3s-init
+      ansible.builtin.systemd:
+        name: k3s-init
+        state: stopped
+      failed_when: false
 
-  - name: Reset the failed state of the k3s-init
-    ansible.builtin.command:
-      cmd: systemctl reset-failed k3s-init
-    failed_when: false
+    - name: Reset the failed state of the k3s-init
+      ansible.builtin.command:
+        cmd: systemctl reset-failed k3s-init
+      failed_when: false
+      changed_when: false
 
-  - name: Init cluster on etcd nodes
-    ansible.builtin.command:
-      cmd: "systemd-run -p RestartSec=2 \
-                        -p Restart=on-failure \
-                        --unit=k3s-init \
-                        /usr/local/bin/k3s server {{ etcd_init_args }}"
-    when: inventory_hostname in groups['etcd']
+    - name: Init cluster on etcd nodes
+      ansible.builtin.command:
+        cmd: "systemd-run -p RestartSec=2 \
+                          -p Restart=on-failure \
+                          --unit=k3s-init \
+                          /usr/local/bin/k3s server {{ k3s_etcd_init_args }}"
+      changed_when: false
+      when: inventory_hostname in groups['etcd']
 
-  - name: Read k3s token
-    ansible.builtin.include_tasks: ./get_token.yml
+    - name: Read k3s token
+      ansible.builtin.include_tasks: ./get_token.yml
 
-  - name: "Wait for first etcd node port"
-    ansible.builtin.wait_for:
-      host: "{{ hostvars[groups['etcd'][0]].flannel_node_ip }}"
-      port: 6443
+    - name: "Wait for first etcd node port"
+      ansible.builtin.wait_for:
+        host: "{{ hostvars[groups['etcd'][0]].flannel_node_ip }}"
+        port: 6443
+        delay: 10
+      when: inventory_hostname in groups['server']
+
+    - name: Init cluster on control-plane nodes
+      ansible.builtin.command:
+        cmd: "systemd-run -p RestartSec=2 \
+                          -p Restart=on-failure \
+                          --unit=k3s-init \
+                          /usr/local/bin/k3s server {{ k3s_server_init_args }}"
+      changed_when: false
+      when: inventory_hostname in groups['server']
+
+    - name: Verify that all etcd nodes actually joined
+      ansible.builtin.command:
+        cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/etcd=true" -o=jsonpath="{.items[*].metadata.name}"
+      register: nodes
+      until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['etcd'] | length)
+      retries: "{{ retry_count | default(20) }}"
       delay: 10
-    when: inventory_hostname in groups['server']
+      changed_when: false
+      when: inventory_hostname in groups['server']
 
-  - name: Init cluster on control-plane nodes
-    ansible.builtin.command:
-      cmd: "systemd-run -p RestartSec=2 \
-                        -p Restart=on-failure \
-                        --unit=k3s-init \
-                        /usr/local/bin/k3s server {{ server_init_args }}"
-    when: inventory_hostname in groups['server']
-
-  - name: Verify that all etcd nodes actually joined
-    ansible.builtin.command:
-      cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/etcd=true" -o=jsonpath="{.items[*].metadata.name}"
-    register: nodes
-    until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['etcd'] | length)
-    retries: "{{ retry_count | default(20) }}"
-    delay: 10
-    when: inventory_hostname in groups['server']
-    changed_when: false
-
-  - name: Verify that all control-plane nodes actually joined
-    ansible.builtin.command:
-      cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
-    register: nodes
-    until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['server'] | length)
-    retries: "{{ retry_count | default(20) }}"
-    delay: 10
-    when: inventory_hostname in groups['server']
-    changed_when: false
+    - name: Verify that all control-plane nodes actually joined
+      ansible.builtin.command:
+        cmd: /usr/local/bin/k3s kubectl get nodes -l "node-role.kubernetes.io/control-plane=true" -o=jsonpath="{.items[*].metadata.name}"
+      register: nodes
+      until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups['server'] | length)
+      retries: "{{ retry_count | default(20) }}"
+      delay: 10
+      changed_when: false
+      when: inventory_hostname in groups['server']

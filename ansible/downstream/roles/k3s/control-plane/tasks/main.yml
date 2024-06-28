@@ -10,7 +10,6 @@
   when: inventory_hostname == groups['server'][0] and skip_manifest_deploy is false
   tags:
     - manifests
-    - cluster_update
 
 - name: Copy K3s service file
   register: k3s_service
@@ -20,9 +19,6 @@
     owner: root
     group: root
     mode: "0644"
-  tags:
-    - cluster_update
-    - restore
 
 - name: Enable and check K3s service
   ansible.builtin.systemd:
@@ -31,11 +27,6 @@
     state: restarted
     enabled: true
   when: k3s_service is changed or server_config_file is changed or registry_config_file is changed
-  tags:
-    - cluster_update
-    - update_k3s
-    - restore
-    - private_registry
 
 - name: Create directory .kube
   ansible.builtin.file:
@@ -44,8 +35,6 @@
     owner: "{{ ansible_user }}"
     mode: "u=rwx,g=rx,o="
   when: inventory_hostname == groups['server'][0]
-  tags:
-    - restore
 
 - name: Copy config file to user home directory
   ansible.builtin.copy:
@@ -55,8 +44,6 @@
     owner: "{{ ansible_user }}"
     mode: "u=rw,g=,o="
   when: inventory_hostname == groups['server'][0]
-  tags:
-    - restore
 
 - name: Delete default configs from kube config
   ansible.builtin.command: '{{ item }}'
@@ -64,19 +51,14 @@
     - /usr/local/bin/k3s kubectl config delete-cluster default --kubeconfig ~{{ ansible_user }}/.kube/config
     - /usr/local/bin/k3s kubectl config delete-context default --kubeconfig ~{{ ansible_user }}/.kube/config
     - /usr/local/bin/k3s kubectl config delete-user default --kubeconfig ~{{ ansible_user }}/.kube/config
-  when: inventory_hostname == groups['server'][0]
   changed_when: false
-  tags:
-    - config_update
-    - restore
+  when: inventory_hostname == groups['server'][0]
+
 
 - name: Read server cert from master
   ansible.builtin.slurp:
     path: "/var/lib/rancher/k3s/server/tls/server-ca.crt"
   register: server_cert
-  tags:
-    - config_update
-    - restore
   when: inventory_hostname == groups['server'][0]
 
 - name: Read admin client cert from master
@@ -84,18 +66,12 @@
     path: "/var/lib/rancher/k3s/server/tls/client-admin.crt"
   register: client_admin_cert
   when: inventory_hostname == groups['server'][0]
-  tags:
-    - config_update
-    - restore
 
 - name: Read admin client cert from master
   ansible.builtin.slurp:
     path: "/var/lib/rancher/k3s/server/tls/client-admin.key"
   register: client_admin_key
   when: inventory_hostname == groups['server'][0]
-  tags:
-    - config_update
-    - restore
 
 - name: Configure kube config for {{ cluster_name }}
   ansible.builtin.command: "{{ item }}"
@@ -109,40 +85,30 @@
     - /usr/local/bin/k3s kubectl config use-context {{ kconfig_cluster_name }} --kubeconfig ~{{ ansible_user }}/.kube/config
   when: inventory_hostname == groups['server'][0]
   changed_when: false
-  tags:
-    - config_update
-    - restore
 
 - name: Create kubectl symlink
   ansible.builtin.file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/kubectl
     state: link
-  tags:
-    - restore
 
 - name: Create crictl symlink
   ansible.builtin.file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/crictl
     state: link
-  tags:
-    - restore
 
 - name: Install kubectl bash completion
-  shell: "/usr/local/bin/kubectl completion bash > /etc/bash_completion.d/kubectl"
+  ansible.builtin.shell: "/usr/local/bin/kubectl completion bash > /etc/bash_completion.d/kubectl"
+  changed_when: false
   when: inventory_hostname in groups['server']
-  tags:
-    - bash_completion
 
 - name: Install k3s bash completion
-  shell: "/usr/local/bin/k3s completion bash > /etc/bash_completion.d/k3s"
+  ansible.builtin.shell: "/usr/local/bin/k3s completion bash > /etc/bash_completion.d/k3s"
+  changed_when: false
   when: inventory_hostname in groups['server']
-  tags:
-    - bash_completion
 
 - name: Install crictl bash completion
-  shell: "/usr/local/bin/crictl completion bash > /etc/bash_completion.d/crictl"
+  ansible.builtin.shell: "/usr/local/bin/crictl completion bash > /etc/bash_completion.d/crictl"
+  changed_when: false
   when: inventory_hostname in groups['server']
-  tags:
-    - bash_completion

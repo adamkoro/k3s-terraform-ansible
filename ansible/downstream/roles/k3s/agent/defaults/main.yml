@@ -2,13 +2,13 @@
 #############
 ## Runtime args
 #############
-runtime_agent_args: >-
+k3s_runtime_agent_args: >-
   --server https://{{ cluster_endpoint }}:6443
 
 #############
 ## K3S agent config
 #############
-agent_config_yaml: |
+k3s_agent_config_yaml: |
   token:
     - {{ k3s_token }}
   node-label:

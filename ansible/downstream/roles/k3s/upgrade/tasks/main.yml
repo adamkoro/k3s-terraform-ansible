@@ -1,0 +1,27 @@
+---
+- name: Save current K3s service
+  ansible.builtin.shell:
+    cmd: "cp {{ systemd_dir }}/k3s*.service /tmp/"
+  changed_when: true
+  when: airgap_dir is undefined
+
+- name: Download and install new K3s version
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s-install.sh
+  environment:
+    INSTALL_K3S_SKIP_START: "true"
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+  changed_when: true
+  when: airgap_dir is undefined
+
+- name: Restore K3s service
+  ansible.builtin.shell:
+    cmd: "mv /tmp/k3s*.service {{ systemd_dir }}/"
+  changed_when: true
+  when: airgap_dir is undefined
+
+- name: Restart K3s service
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    name: k3s
