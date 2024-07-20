@@ -60,7 +60,7 @@
     - manifests
 
 - name: Copy rancher-logging manifest to first master
-  template:
+  ansible.builtin.template:
     src: "rancher-logging.yaml.j2"
     dest: "/var/lib/rancher/k3s/server/manifests/rancher-logging.yaml"
     owner: root
