@@ -24,7 +24,7 @@
   changed_when: true
 
 - name: Setup optional config file
-  when: agent_config_yaml is defined and inventory_hostname in groups['agent']
+  when: k3s_agent_config_yaml is defined and inventory_hostname in groups['agent']
   block:
     - name: Make config directory
       ansible.builtin.file:
