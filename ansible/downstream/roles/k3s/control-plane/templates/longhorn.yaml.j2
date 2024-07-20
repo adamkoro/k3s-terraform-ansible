@@ -26,14 +26,17 @@ spec:
     repo: https://charts.rancher.io
     targetNamespace: longhorn-system
     valuesContent: |-
+        metrics:
+            serviceMonitor:
+                enabled: false
         persistence: 
             defaultClassReplicaCount: {{ longhorn_replica_number }}
             recurringJobSelector:
                 enable: true
-                jobList: '[{"name":"backup-s3", "isGroup":true}]'
+                jobList: '[{"name":"backup", "isGroup":true}]'
         defaultSettings:
             backupTarget: "{{ longhorn_backup_path }}"
-            backupTargetCredentialSecret: "{{ longhorn_backup_secret }}"
+            backupTargetCredentialSecret: ""
             defaultReplicaCount: {{ longhorn_replica_number }}
             createDefaultDiskLabeledNodes: {{ longhorn_disk_on_labeled_node }}
         ingress:
@@ -45,32 +48,21 @@ spec:
             tls: true
             tlsSecret: longhorn-cert
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-    name: "{{ longhorn_backup_secret }}"
-    namespace: longhorn-system
-type: Opaque
-stringData:
-    AWS_ACCESS_KEY_ID: "{{ longhhorn_backup_access_key_id }}"
-    AWS_SECRET_ACCESS_KEY: "{{ longhhorn_backup_secret_key_id }}" 
-    AWS_ENDPOINTS: "{{ longhorn_backup_s3_endpoints }}"
----
 apiVersion: longhorn.io/v1beta2
 kind: RecurringJob
 metadata:
-    name: backup-s3
+    name: backup
     namespace: longhorn-system
 spec:
-    name: backup-s3
+    name: backup
     task: backup
     retain: 3
     concurrency: 4
     cron: 0 20 * * *
     labels:
-        backup-s3: "true"
+        backup: "true"
     groups:
-    -  backup-s3
+    -  backup
 
 ---
 apiVersion: longhorn.io/v1beta2
