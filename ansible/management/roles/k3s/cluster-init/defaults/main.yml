@@ -37,3 +37,5 @@ server_config_yaml: |
   etcd-s3-secret-key: {{ etcd_s3_backup_secret_key }}
   etcd-s3-bucket: {{ etcd_s3_backup_bucket }}
   etcd-s3-region: {{ etcd_s3_region }}
+  etcd-s3-skip-ssl-verify: {{ etcd_s3_skip_ssl_verify }}
+  etcd-s3-insecure: {{ etcd_s3_insecure }}
