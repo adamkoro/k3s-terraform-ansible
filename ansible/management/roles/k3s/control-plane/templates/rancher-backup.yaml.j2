@@ -33,6 +33,7 @@ spec:
             region: {{ rancher_backup_s3_region }}
             bucketName: {{ rancher_backup_s3_bucket }}
             endpoint: {{ rancher_backup_s3_endpoint }}
+            insecureTLSSkipVerify: {{ rancher_backup_s3_tls_skip_verify }}
 ---
 apiVersion: v1
 kind: Secret
