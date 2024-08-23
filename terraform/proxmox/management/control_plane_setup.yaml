@@ -1,3 +1,4 @@
+---
 - name: Control-plane node setup
   become: true
   hosts: all
@@ -21,7 +22,7 @@
       failed_when: false
 
     - name: Create a filesystem for swap
-      filesystem:
+      community.general.filesystem:
         dev: "{{ swap_disk }}"
         fstype: swap
         force: true
@@ -42,7 +43,7 @@
       failed_when: false
 
     - name: Format kubelet disk
-      filesystem:
+      community.general.filesystem:
         dev: "{{ kubelet_disk }}"
         fstype: "{{ filesystem_type }}"
         force: true
@@ -63,7 +64,7 @@
       failed_when: false
 
     - name: Create a filesystem for rancher
-      filesystem:
+      community.general.filesystem:
         dev: "{{ rancher_disk }}"
         fstype: "{{ filesystem_type }}"
         force: true
@@ -84,7 +85,7 @@
       failed_when: false
 
     - name: Create a filesystem for longhorn
-      filesystem:
+      community.general.filesystem:
         dev: "{{ longhorn_disk }}"
         fstype: "{{ filesystem_type }}"
         force: true
