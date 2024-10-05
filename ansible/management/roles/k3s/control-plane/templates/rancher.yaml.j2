@@ -18,6 +18,8 @@ spec:
         hostname: '{{ rancher_hostname }}'
         replicas: {{ rancher_replica_number }}
         bootstrapPassword: '{{ rancher_password }}'
+        #additionalTrustedCAs: true
+        agentTLSMode: system-store
         ingress:
             ingressClassName: nginx
             extraAnnotations: 
