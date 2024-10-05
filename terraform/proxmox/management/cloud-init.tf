@@ -130,9 +130,5 @@ network:
         - to: 0.0.0.0/0
           via: ${var.cloud_init_gateway1}
           metric: 100
-    enp6s20:
-      dhcp4: no
-      addresses:
-        - ${var.cloud_init_ip_pool2}${count.index + var.cloud_init_ip_increase}/${var.cloud_init_netmask}
 EOT
 }

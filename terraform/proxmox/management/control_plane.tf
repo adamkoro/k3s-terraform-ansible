@@ -2,8 +2,8 @@ resource "proxmox_vm_qemu" "management_control_plane" {
     count       = var.vm_count
     target_node = var.proxmox_target_node
     name        = "${var.proxmox_vm_name}-cp-${count.index + 1}"
-    vmid          = "20${count.index + 1}"
-    cores       = 6
+    vmid          = "10${count.index + 1}"
+    cores       = 4
     sockets     = 1
     cpu         = "host"
     memory      = 8192
@@ -75,10 +75,6 @@ resource "proxmox_vm_qemu" "management_control_plane" {
     }
     network {
         bridge = "vmbr0"
-        model  = "virtio"
-    }
-    network {
-        bridge = "vmbr1"
         model  = "virtio"
     }
     network {
